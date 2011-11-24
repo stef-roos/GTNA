@@ -8,17 +8,172 @@
 \usepackage{epstopdf}
 \DeclareGraphicsRule{.tif}{png}{.png}{`convert #1 `dirname #1`/`basename #1 .tif`.png}
 
-\title{GTNA - Graph-Theoretic Network Analyzer}
+%\title{GTNA - Graph-Theoretic Network Analyzer}
+\title{}
 \author{Benjamin Schiller}
-%\date{}                                           % Activate to display a given date or no date
+\date{}
 
 \begin{document}
+\includegraphics{images/GTNA_Logo_RGB.pdf}
 \maketitle
 
 \tableofcontents
 
 
-\section*{Changelog}
+
+
+
+\section{Networks}
+
+* Canonical
+	* Complete Graph
+	* Ring
+	* Star
+* Model
+	* Barabasi Albert
+	* De Bruijn
+	* Erdos Renyi
+	* Gilbert
+	* Growing Network (GN)
+	* Growing Network with Copying (GNC)
+	* Growing Network with Re-direction (GNR)
+	* Kleinberg
+	* UnitDisc
+	* Watts Strogatz
+* P2P
+	* CAN
+	* Chord
+	* Gnutella04
+	* Gnutella06
+	* Kademlia
+	* ODRI
+	* Pastry
+	* PathFinder
+	* Symphony
+* Util
+	* Readable File
+	* Readable Folder
+	* Readable List
+
+
+\section{Transformations}
+
+* Network Embedding
+	* LMC
+	* Swapping
+* Community Detection
+	* Label Propagation
+	* Modularity
+	* Role Generation
+* Graph Drawings
+	* Canonical Circular Crossing
+	* Frick
+	* Fruchterman Reingold
+	* Melancon Herman
+	* Six Tollis
+	* Wetherell Shannon
+* Random ID Space
+	* Chord ID Space
+	* Plane ID Space
+	* Ring ID Space
+* Lookahead List Generation
+* Partitioning
+	* Giant Connected Component
+	* Strong Connectivity Partition
+	* Weak Connectivity Component
+* Spanning Tree
+	* BFS
+* Degree
+	* Random Graph With Same Degree Distribution
+	* Remove Dead Nodes
+	* Remove Largest Nodes
+	* Remove Small Degree Nodes
+* Edges
+	* Bidirectional
+
+
+\section{Routing Algorithms}
+
+* Flooding
+	* Flooding
+	* GreedyFlooding
+* Greedy
+	* Greedy
+	* Greedy Backtracking
+	* Greedy Backtracking Extended
+	* Greedy Next Best
+	* Greedy Next Best Backtracking
+* Lookahead
+	* Lookahead
+	* Lookahead Min Via
+	* Lookahead Sequential
+* TwoPhase
+	* TwoPhase Greedy
+	* TwoPhase Greedy Registration
+	* TwoPhase Greedy Registration Multiple Realities
+	* TwoPhase Lookahead
+	* TwoPhase Lookahead Registration
+	* TwoPhase Lookahead Registration Multiple Realities
+* etc
+	* BubbleCast
+	* Random Walk
+
+
+
+\section{Metrics}
+
+* general
+	* m = multi-scalar
+	* s = single-scalar
+	* distributions = fractions (m), cdf (m), min (s), max (s), average (s), median (s)
+	* for each metric: runtime (s)
+* clustering coefficient
+	* local clustering coefficient (m)
+	* clustering coefficient (s)
+* communities
+	* size distribution (m+s)
+* degree distributiion
+	* degree distribution (m+s)
+	* in-degree distribution (m+s)
+	* out-degree distribution (m+s)
+	* \# of nodes (s)
+	* \# of edges (s)
+* strong / weak connectivity
+	* largest component (s)
+	* fraction of largest component (s)
+	* component size (m)
+	* component size fraction (m)
+* roles
+	* role distribution (m+s)
+* routing
+	* routing hop count distribution (m+s)
+	* routing hop count distribution absolute (m+s)
+	* routing betweenness (m)
+	* all routes (for later processing)
+* shortest paths
+	* shortest path length distribution (m+s)
+	* shortest path length distribution absolute (m+s)
+	* local characteristic path length (m)
+	* connectivity (s)
+* motifs
+	* distribution of directed 3-node motifs (m+s)
+	* distribution of undirected 4-node motifs (m+s)
+* network fragmentation
+	* configurable node removal strategy
+	* strong / weak connectivity over "time" (m+s)
+* rich club connectivity
+	* rich club connectivity (m)
+* id space
+	* distance distribution (m+s)
+	* hops to neighbors (m+s)
+	* binned representations (m+s)
+
+
+
+
+
+
+
 
 \section{Introduction}
 
@@ -37,5 +192,11 @@
 \section{Graph Properties}
 
 \section{...}
+
+\section*{Changelog}
+
+\begin{description}
+	\item[24.11.2011] initial document
+\end{description}
 
 \end{document}  
