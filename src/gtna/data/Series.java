@@ -36,7 +36,6 @@
 package gtna.data;
 
 import gtna.graph.Graph;
-import gtna.io.GraphWriter;
 import gtna.io.Output;
 import gtna.metrics.Metric;
 import gtna.networks.Network;
@@ -164,6 +163,122 @@ public class Series {
 		return s;
 	}
 
+	private static class SeriesThread extends Thread {
+		private int start;
+
+		private int end;
+
+		private Network n;
+
+		private Series s;
+
+		private Metric[] metrics;
+
+		private boolean skipExistingDataFolders;
+
+		private int maxLength;
+
+		private SeriesThread(int start, int end, Network n, Series s,
+				Metric[] metrics, boolean skipExistingDataFolders, int maxLength) {
+			this.start = start;
+			this.end = end;
+			this.n = n;
+			this.s = s;
+			this.metrics = metrics;
+			this.skipExistingDataFolders = skipExistingDataFolders;
+			this.maxLength = maxLength;
+		}
+
+		public void run() {
+			for (int time = start; time <= end; time++) {
+				int gc = Config.getInt("TIMES_TO_CALL_GARBAGE_COLLECTOR");
+				for (int j = 0; j < gc; j++) {
+					System.gc();
+				}
+
+				s.graphFolders[time] = s.folder + time
+						+ Config.get("FILESYSTEM_FOLDER_DELIMITER");
+				s.dataFolders[time] = s.graphFolders[time]
+						+ Config.get("GRAPH_DATA_FOLDER");
+
+				if (skipExistingDataFolders
+						&& (new File(s.dataFolders[time])).exists()) {
+					Output.writeln("skipping " + s.dataFolders[time]);
+					continue;
+				}
+
+				String singlesFilename = s.graphFolders[time]
+						+ Config.get("GRAPH_SINGLES_FILENAME");
+				String graphFilename = s.graphFolders[time]
+						+ Config.get("GRAPH_FILENAME");
+				String graphInfoFilename = s.graphFolders[time]
+						+ Config.get("GRAPH_INFO_FILENAME");
+
+				String networkOutput = Config.get("NETWORK_GENERATION")
+						.replace("%NETWORK", n.description());
+				String singlesOutput = "  "
+						+ Config.get("SINGLES_WRITER_OUTPUT").replace(
+								"%FILENAME", singlesFilename);
+				String graphOutput = "  "
+						+ Config.get("GRAPH_WRITER_OUTPUT").replace(
+								"%FILENAME", graphFilename);
+				if (networkOutput.length() > maxLength) {
+					maxLength = networkOutput.length();
+				}
+				if (singlesOutput.length() > maxLength) {
+					maxLength = singlesOutput.length();
+				}
+				if (graphOutput.length() > maxLength) {
+					maxLength = graphOutput.length();
+				}
+
+				if (time > 0) {
+					Output.writeln("");
+				}
+
+				System.out.println((new Date(System.currentTimeMillis()))
+						.toString()
+						+ " / "
+						+ (new Time(System.currentTimeMillis())).toString());
+				Timer networkTimer = new Timer(networkOutput
+						+ fill(maxLength - networkOutput.length()));
+				Graph g = n.generate();
+				Transformation[] t = n.transformations();
+				for (int j = 0; j < t.length; j++) {
+					if (t[j].applicable(g)) {
+						g = t[j].transform(g);
+					}
+				}
+				networkTimer.end();
+
+				// metrics = Config.getMetrics();
+				HashMap<String, Metric> computedMetrics = new HashMap<String, Metric>();
+				for (int j = 0; j < metrics.length; j++) {
+					Timer timer = new Timer("  - " + metrics[j].name()
+							+ fill(maxLength - 4 - metrics[j].name().length()));
+					metrics[j].computeData(g, n, computedMetrics);
+					metrics[j].writeData(s.dataFolders[time]);
+					timer.end();
+					computedMetrics.put(metrics[j].key(), metrics[j]);
+				}
+
+				Timer swTimer = new Timer(singlesOutput
+						+ fill(maxLength - singlesOutput.length()));
+				Singles singles = new Singles(n.description(), metrics);
+				singles.write(singlesFilename);
+				swTimer.end();
+
+				for (int j = 0; j < gc; j++) {
+					System.gc();
+				}
+			}
+		}
+
+		public String toString() {
+			return this.start + " => " + this.end;
+		}
+	}
+
 	public static Series generate(Network n, int times) {
 		Series s = new Series(n);
 		s.dataFolders = new String[times];
@@ -241,99 +356,29 @@ public class Series {
 		boolean skipExistingDataFolders = Config
 				.getBoolean("SKIP_EXISTING_DATA_FOLDERS");
 
-		for (int i = 0; i < times; i++) {
-			int gc = Config.getInt("TIMES_TO_CALL_GARBAGE_COLLECTOR");
-			for (int j = 0; j < gc; j++) {
-				System.gc();
+		SeriesThread[] threads = new SeriesThread[Config
+				.getInt("PARALLEL_SERIES")];
+		for (int i = 0; i < threads.length; i++) {
+			int start = times / threads.length * i;
+			int end = times / threads.length * (i + 1) - 1;
+			if (i == threads.length - 1) {
+				end = times - 1;
 			}
-
-			s.graphFolders[i] = s.folder + i
-					+ Config.get("FILESYSTEM_FOLDER_DELIMITER");
-			s.dataFolders[i] = s.graphFolders[i]
-					+ Config.get("GRAPH_DATA_FOLDER");
-
-			if (skipExistingDataFolders
-					&& (new File(s.dataFolders[i])).exists()) {
-				Output.writeln("skipping " + s.dataFolders[i]);
-				continue;
+			threads[i] = new SeriesThread(start, end, n, s, metrics,
+					skipExistingDataFolders, maxLength);
+			threads[i].start();
+			System.out.println(threads[i]);
+		}
+		for (SeriesThread t : threads) {
+			try {
+				t.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
 			}
+		}
 
-			String singlesFilename = s.graphFolders[i]
-					+ Config.get("GRAPH_SINGLES_FILENAME");
-			String graphFilename = s.graphFolders[i]
-					+ Config.get("GRAPH_FILENAME");
-			String graphInfoFilename = s.graphFolders[i]
-					+ Config.get("GRAPH_INFO_FILENAME");
-
-			String networkOutput = Config.get("NETWORK_GENERATION").replace(
-					"%NETWORK", n.description());
-			String singlesOutput = "  "
-					+ Config.get("SINGLES_WRITER_OUTPUT").replace("%FILENAME",
-							singlesFilename);
-			String graphOutput = "  "
-					+ Config.get("GRAPH_WRITER_OUTPUT").replace("%FILENAME",
-							graphFilename);
-			if (networkOutput.length() > maxLength) {
-				maxLength = networkOutput.length();
-			}
-			if (singlesOutput.length() > maxLength) {
-				maxLength = singlesOutput.length();
-			}
-			if (graphOutput.length() > maxLength) {
-				maxLength = graphOutput.length();
-			}
-
-			if (i > 0) {
-				Output.writeln("");
-			}
-
-			System.out.println((new Date(System.currentTimeMillis()))
-					.toString()
-					+ " / "
-					+ (new Time(System.currentTimeMillis())).toString());
-			Timer networkTimer = new Timer(networkOutput
-					+ fill(maxLength - networkOutput.length()));
-			Graph g = n.generate();
-			Transformation[] t = n.transformations();
-			for (int j = 0; j < t.length; j++) {
-				if (t[j].applicable(g)) {
-					g = t[j].transform(g);
-				}
-			}
-			networkTimer.end();
-
-			// metrics = Config.getMetrics();
-			HashMap<String, Metric> computedMetrics = new HashMap<String, Metric>();
-			for (int j = 0; j < metrics.length; j++) {
-				Timer timer = new Timer("  - " + metrics[j].name()
-						+ fill(maxLength - 4 - metrics[j].name().length()));
-				metrics[j].computeData(g, n, computedMetrics);
-				metrics[j].writeData(s.dataFolders[i]);
-				timer.end();
-				computedMetrics.put(metrics[j].key(), metrics[j]);
-			}
-
-			Timer swTimer = new Timer(singlesOutput
-					+ fill(maxLength - singlesOutput.length()));
-			Singles singles = new Singles(n.description(), metrics);
-			singles.write(singlesFilename);
-			swTimer.end();
-			
-//			GraphWriter.writeWithProperties(g, graphFilename);
-			// TODO write graph depending on configuration
-			// TODO write properties in separate file
-			// Timer gTimer = new Timer(graphOutput
-			// + fill(maxLength - graphOutput.length()));
-			// GraphWriter.write(g, graphFilename);
-			// gTimer.end();
-			// Timer gInfoTimer = new Timer(graphInfoOutput
-			// + fill(maxLength - graphInfoOutput.length()));
-			// GraphWriter.write(g, graphInfoFilename, GraphWriter.INFO_FORMAT);
-			// gInfoTimer.end();
-
-			for (int j = 0; j < gc; j++) {
-				System.gc();
-			}
+		for (int time = 0; time < times; time++) {
+			// TODO include computation
 		}
 		Output.writelnDelimiter();
 
