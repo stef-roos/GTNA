@@ -35,6 +35,9 @@
  */
 package gtna;
 
+import gtna.data.Series;
+import gtna.networks.Network;
+import gtna.networks.model.BarabasiAlbert;
 import gtna.util.Config;
 import gtna.util.Stats;
 
@@ -57,7 +60,7 @@ public class GTNA {
 
 		// // CAN network with 100 nodes, d=3, and r=2
 		// // neither a transformation nor a routing algorithm are given
-		// Network can = new CAN(100, 3, 2, null, null);
+		Network can = new BarabasiAlbert(100,  2, null, null);
 		//
 		// // CAN networks with different numbers of nodes
 		// Network[] cans = CAN.get(new int[] { 100, 200, 300 }, 2, 4, null,
@@ -73,7 +76,7 @@ public class GTNA {
 		// // instances
 		// // then, all metric specified in METRICS are computed for these
 		// graphs
-		// Series s = Series.generate(can, 12);
+		Series s = Series.generate(can, 1);
 		//
 		// // generates an array of series for the specified networks
 		// Series[] s2 = Series.generate(cans, 5);

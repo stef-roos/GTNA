@@ -319,7 +319,9 @@ public class Series {
 			singles.write(singlesFilename);
 			swTimer.end();
 			
-//			GraphWriter.writeWithProperties(g, graphFilename);
+			if (Config.getBoolean("WRITEGRAPH")){
+              GraphWriter.writeWithProperties(g, graphFilename);
+			}  
 			// TODO write graph depending on configuration
 			// TODO write properties in separate file
 			// Timer gTimer = new Timer(graphOutput
