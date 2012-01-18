@@ -38,7 +38,10 @@ package gtna;
 import gtna.data.Series;
 import gtna.networks.Network;
 import gtna.networks.util.ReadableFile;
+import gtna.routing.RoutingAlgorithm;
+import gtna.routing.greedyVariations.DepthFirstGreedy;
 import gtna.transformation.Transformation;
+import gtna.transformation.attackableEmbedding.lmc.LMC;
 import gtna.transformation.attackableEmbedding.log.lmc.LMCLog;
 import gtna.transformation.id.RandomRingIDSpaceSimple;
 import gtna.util.Config;
@@ -53,10 +56,10 @@ public class Log {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Config.overwrite("WRITEGRAPH", "true");
-		Config.overwrite("METRICS", "");
-		//logLMC("SPI", "graphs/SPI-LMC/", 100);
-         LMCRandom();
+		Config.overwrite("WRITEGRAPH", "false");
+		Config.overwrite("METRICS", "ROUTING");
+		LMC("SPI", "graphs/SPI-R/", 6000);
+         //LMCRandom();
 	}
 	
 	public static void logLMC(String name, String folder, int iter){
@@ -70,10 +73,29 @@ public class Log {
         Transformation[] lmcOpti = {new LMCLog("results/", "log/", iter,LMCLog.MODE_UNRESTRICTED, 0.0, "" + 10E-12, 0,
 				LMCLog.ATTACK_OPTI, LMCLog.ATTACKER_SELECTION_LARGEST,100)};
         Transformation[][] all = {lmcNorm, lmcContraction, lmcConvergence, lmcKleinberg, lmcOpti};
-        for (int i = 0; i< 1; i++){
+        for (int i = 0; i< all.length; i++){
         	System.out.println("Start " + i);
         	Network net = new ReadableFile(name, folder, folder + "graph.txt", null, all[i]);
         	Series.generate(net, 1);
+        }
+	}
+	
+	public static void LMC(String name, String folder ,int iter){
+		Transformation[] lmcNorm = {new LMC(iter,LMCLog.MODE_UNRESTRICTED, 0.0, "" + 10E-12, 0)};
+        Transformation[] lmcContraction = {new LMC(iter,LMCLog.MODE_UNRESTRICTED, 0.0, "" + 10E-12, 0,
+				LMCLog.ATTACK_CONTRACTION, LMCLog.ATTACKER_SELECTION_LARGEST,100)};
+        Transformation[] lmcConvergence = {new LMC(iter,LMCLog.MODE_UNRESTRICTED, 0.0, "" + 10E-12, 0,
+				LMCLog.ATTACK_CONVERGENCE, LMCLog.ATTACKER_SELECTION_LARGEST,100)};
+        Transformation[] lmcKleinberg = {new LMC(iter,LMCLog.MODE_UNRESTRICTED, 0.0, "" + 10E-12, 0,
+				LMCLog.ATTACK_KLEINBERG, LMCLog.ATTACKER_SELECTION_LARGEST,100)};
+        RoutingAlgorithm ra = new DepthFirstGreedy(174);
+        Transformation[] lmcOpti = {new LMC(iter,LMCLog.MODE_UNRESTRICTED, 0.0, "" + 10E-12, 0,
+				LMCLog.ATTACK_OPTI, LMCLog.ATTACKER_SELECTION_LARGEST,100)};
+        Transformation[][] all = {lmcNorm, lmcContraction, lmcConvergence, lmcKleinberg};
+        for (int i = 0; i< all.length; i++){
+        	System.out.println("Start " + i);
+        	Network net = new ReadableFile(name, folder, folder + "graph.txt", ra, all[i]);
+        	Series.generate(net, 5);
         }
 	}
 	
