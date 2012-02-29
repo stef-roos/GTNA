@@ -44,6 +44,8 @@ import gtna.networks.model.smallWorld.Kleinberg;
 import gtna.networks.model.smallWorld.Kleinberg1D;
 import gtna.networks.model.smallWorld.Kleinberg1DC;
 import gtna.networks.model.smallWorld.ScaleFreeUndirected;
+import gtna.networks.util.ReadableFile;
+import gtna.plot.Plot;
 import gtna.routing.RoutingAlgorithm;
 import gtna.routing.greedyVariations.BacktrackGreedy;
 import gtna.routing.greedyVariations.DepthFirstEdgeGreedy;
@@ -63,6 +65,8 @@ import gtna.transformation.failure.node.LargestFailure;
 import gtna.transformation.failure.node.RandomFailure;
 import gtna.util.Config;
 
+import java.io.File;
+
 /**
  * @author stef
  *
@@ -76,8 +80,14 @@ public class Test {
 //	for (int i=4; i < 6; i++){
 //		testFailures(i*20000,30,2);
 //	}
-	ScaleFreeRandomGraph net = new ScaleFreeRandomGraph(10000,2.5,1,100, null,null);
-	Series.generate(net, 5);
+//	ScaleFreeRandomGraph net = new ScaleFreeRandomGraph(10000,2.5,1,10000, null,null);
+//	Series.generate(net, 5);
+	String[] kadGraphs = ((new File("KAD/"))).list();
+	for (int i = 0; i < kadGraphs.length; i++){
+		 ReadableFile net = new ReadableFile(kadGraphs[i], kadGraphs[i], "KAD/"+kadGraphs[i],null,null );
+       		Series s = Series.generate(net, 100);
+       		Plot.allMulti(s, "KAD");
+	}
 //	int size = Integer.parseInt(args[0]);
 //	int C = Integer.parseInt(args[1]);
 //	int iter = Integer.parseInt(args[2]);

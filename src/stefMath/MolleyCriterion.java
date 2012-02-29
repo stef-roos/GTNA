@@ -46,17 +46,15 @@ import java.io.File;
 public class MolleyCriterion {
 	
 	public static void main(String[] args){
-		double alpha = 2.5;
-		double[] dist = new double[100];
-		double norm = 0;
-		for (int i = 1; i < dist.length; i++){
-			dist[i] = Math.pow(i, -alpha);
-			norm = norm + dist[i];
+		int[] nodes = {517,519,520,523,527,559};
+		for (int i = 0; i < nodes.length; i++){
+			String[] folders = (new File("data/"+nodes[i])).list();
+			for (int j = 0; j < folders.length; j++ ){
+			   double[] dist = DataReader.readDouble("data/"+nodes[i]+"/"+folders[j]+"/0/data/dd-inDegreeDistribution.txt");
+			   System.out.println(folders[j]+" & " + getRandomDeletionPerc(dist) + " & " + getLargestDeletionPerc(dist));
+			}
 		}
-		for (int i = 1; i < dist.length; i++){
-			dist[i] = dist[i]/norm;
-		}
-		System.out.println(getLargestDeletionPerc(dist));
+		
 //		int[] counts = {10000,20000,30000,40000,60000,80000};
 //		for (int i = 0; i < counts.length; i++){
 //			String folder = "data/"+counts[i];
@@ -132,12 +130,8 @@ public class MolleyCriterion {
                }
 			   k0 = getk0(distN,j-1);
 			   fpN = 1 - 1/(k0-1);
-			   System.out.println( j + " p=" + p);
-			   System.out.println( j + " fpN=" + fpN);
-			   System.out.println( j + " ep=" + edgef);
-				if (edgef > fpN){
-					System.out.println( "Break");
-					//return p;
+			   if (edgef > fpN){
+					return p;
 				}
 			}
 		}

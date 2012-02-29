@@ -120,7 +120,8 @@ public class ArbitraryDegreeSequence extends NetworkImpl {
 			while (t < 1000 && src==dst){
 				stubs.add(med,dst);
 				t++;
-				dst = stubs.remove(rand.nextInt(stubs.size()));
+				med = rand.nextInt(stubs.size());
+				dst = stubs.remove(med);
 			}
 			if (src == dst){
 				k++;

@@ -29,7 +29,6 @@ public abstract class NodeFailure extends Failure{
         	g.addProperty(g.getNextKey("Deleted"), p);
         }
 		p.deleteNodes(this.getDeletedSet(g.getNodes(), p.getDeleted()));
-        
 		return g;
 	}
 	

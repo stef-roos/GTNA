@@ -63,7 +63,7 @@ public class StrongConnectivityPartition extends TransformationImpl implements
 	@Override
 	public Graph transform(Graph g) {
 		GraphProperty[] prop = g.getProperties("Deleted");
-		if (prop.length > 0){
+		if (prop.length > 0 && !((Deleted)prop[prop.length-1]).isClosed()){
 			return this.transformDelete(g);
 		}
 		ArrayList<ArrayList<Integer>> components = new ArrayList<ArrayList<Integer>>();
@@ -154,7 +154,7 @@ public class StrongConnectivityPartition extends TransformationImpl implements
 			}
 			if (index[w] == -1) {
 				// Successor w has not yet been visited; recurse on it
-				this.strongConnect(w, g, index, lowlink, S, components);
+				this.strongConnectDelete(w, g, index, lowlink, S, components, isDeleted);
 				lowlink[v] = Math.min(lowlink[v], lowlink[w]);
 			} else if (S.contains(w)) {
 				// Successor w is in stack S and hence in the current SCC

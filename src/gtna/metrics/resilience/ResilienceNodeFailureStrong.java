@@ -84,6 +84,7 @@ public abstract class ResilienceNodeFailureStrong extends MetricImpl {
         int count = 0;
         int onePercent = Math.max(oldsize/100,1);
 		this.initFailure(onePercent);
+		//System.out.println(this.failure.name());
         while (!halfed && count < g.getNodes().length){
         	g.removeProperty("STRONG_CONNECTIVITY_PARTITION_0");
         	conn.computeData(g, n, m);
