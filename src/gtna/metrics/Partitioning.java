@@ -73,6 +73,12 @@ public abstract class Partitioning extends MetricImpl implements Metric {
 		}
 		this.runtime = new Timer();
 		Partition p = (Partition) g.getProperty(this.property + "_0");
+		if (p.getComponents().length == 0){
+			this.largestComponent = 0;
+			this.largestComponentFraction = 0;
+			this.components = new double[0];
+			this.componentsFraction = new double[0];
+		} else {
 		this.largestComponent = p.getComponents()[0].length;
 		this.largestComponentFraction = this.largestComponent
 				/ (double) g.getNodes().length;
@@ -82,6 +88,7 @@ public abstract class Partitioning extends MetricImpl implements Metric {
 			this.components[i] = p.getComponents()[i].length;
 			this.componentsFraction[i] = this.components[i]
 					/ (double) g.getNodes().length;
+		}
 		}
 		this.runtime.end();
 	}

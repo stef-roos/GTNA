@@ -120,6 +120,7 @@ public class Singles {
 		for (int i = 0; i < summaries[0].values.length; i++) {
 			double value = 0;
 			for (int j = 0; j < summaries.length; j++) {
+				if (summaries[j].values.length > i)
 				value += summaries[j].values[i].value;
 			}
 			value /= (double) summaries.length;
@@ -148,7 +149,9 @@ public class Singles {
 			for (int i = 0; i < summaries.length; i++) {
 				values[i] = new double[summaries[i].length];
 				for (int j = 0; j < summaries[i].length; j++) {
+					if (summaries[i][j].values.length > v){
 					values[i][j] = summaries[i][j].values[v].value;
+					}
 				}
 			}
 			String name = Config.get(summaries[0][0].values[v].key

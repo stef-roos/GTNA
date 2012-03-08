@@ -573,6 +573,7 @@ public class Plot {
 	 */
 
 	private static void multiAvg(Series[] series, String folder, String plotKey) {
+		//System.out.println(plotKey);
 		String[] data = Config.keys(plotKey + "_PLOT_DATA");
 		for (int i = 0; i < data.length; i++) {
 			if (!Config.containsData(data[i])) {

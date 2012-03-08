@@ -59,13 +59,15 @@ import gtna.routing.greedyVariations.KWorseGreedy;
 import gtna.routing.greedyVariations.OneWorseGreedy;
 import gtna.routing.greedyVariations.PureGreedy;
 import gtna.transformation.Transformation;
-import gtna.transformation.attackableEmbedding.lmc.LMC;
-import gtna.transformation.attackableEmbedding.swapping.Swapping;
+import gtna.transformation.attackableEmbedding.ADHT.ADHT;
 import gtna.transformation.failure.node.LargestFailure;
 import gtna.transformation.failure.node.RandomFailure;
+import gtna.transformation.id.RandomRingIDSpaceSimple;
 import gtna.util.Config;
 
-import java.io.File;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 
 /**
  * @author stef
@@ -74,7 +76,92 @@ import java.io.File;
 public class Test {
 	
 	public static void main(String[] args){
-	Config.overwrite("METRICS", "DEGREE_DISTRIBUTION,  RESILIENCE_LARGEST_FAILURE_STRONG, RESILIENCE_RANDOM_FAILURE_STRONG");
+		//testingADHT();
+		//Config.overwrite("MAIN_DATA_FOLDER", "ADHT2");
+		Config.overwrite("METRICS", "DEGREE_DISTRIBUTION, ROUTING, ID_DISTRIBUTION, SUCC_DISTRIBUTION");
+		int[] max = {14,15,16,17,18,Integer.MAX_VALUE};
+		int[] iter ={10,100,200,500,1000,2000,6000};
+		for (int i = max.length-1; i > -1; i--){
+			for (int j = 0; j < iter.length; j++){
+		Transformation[][] adht = {new Transformation[]{new RandomRingIDSpaceSimple(), new ADHT(iter[j],ADHT.NODE_TYPE_DIVERSE,13,max[i])}};
+		RoutingAlgorithm ra =  new DepthFirstGreedy(174);
+		for (int k = 0; k < adht.length; k++){
+		Network net = new ReadableFile("SPI", "SPI", "graphs/spi.txt",ra,adht[k]);
+		Series ser = Series.generate(net, 25);
+		//Plot.allMulti(ser, "multiDi");
+		}
+		}
+		}
+//		int[] succValues = {5,6,7,8,9,10,11,12};
+//		for (int i = 0; i < succValues.length; i++){
+//		Transformation[][] adht = {new Transformation[]{new RandomRingIDSpaceSimple(), new ADHT(1000,ADHT.NODE_TYPE_SUCC, succValues[i])},
+//				new Transformation[]{new RandomRingIDSpaceSimple(), new ADHT(1000,ADHT.NODE_TYPE_DEF, succValues[i])}};
+//		RoutingAlgorithm ra =  new DepthFirstGreedy(174);
+//		for (int j = 0; j < adht.length; j++){
+//		Network net = new ReadableFile("SPI", "SPI", "graphs/spi.txt",ra,adht[j]);
+//		Series.generate(net, 10);
+//		}
+//		}
+//	Config.overwrite("METRICS", "DEGREE_DISTRIBUTION, ROUTING");
+//	int[] iter = {10,100,200,500,1000,2000,6000};
+//	for (int i = 0; i < iter.length; i++){
+//	Transformation[] adht = {new RandomRingIDSpaceSimple(), new ADHT(iter[i],ADHT.NODE_TYPE_SUCC)};
+//	RoutingAlgorithm ra =  new DepthFirstGreedy(174);
+//	Network net = new ReadableFile("SPI", "SPI", "graphs/spi.txt",ra,adht);
+//	Series.generate(net, 20);
+//	
+//	Transformation[] adht2 = {new RandomRingIDSpaceSimple(), new ADHT(iter[i],ADHT.NODE_TYPE_DEF)};
+//	Network net2 = new ReadableFile("SPI", "SPI", "graphs/spi.txt",ra,adht2);
+//	Series.generate(net2, 20);
+//	}
+//	try{
+//	BufferedWriter bw = new BufferedWriter(new FileWriter("table.txt"));
+// int[] k = {1,2,3,4,5};
+//	for (int i = 0; i < k.length; i++){
+//		Transformation[][] t = {new Transformation[]{new MaxMinBound(k[i],2*k[i])}, 
+//				new Transformation[]{new MaxMinBound(0,2*k[i])}, new Transformation[]{new MaxMinBound(k[i],Integer.MAX_VALUE)}};
+//		int[] min = {k[i],0,k[i]};
+//		int[] max = {2*k[i],2*k[i],Integer.MAX_VALUE};
+//		for (int j = 0; j < t.length; j++){
+//		 Network net = new ReadableFile("SPI", "SPI", "graphs/spi.txt", null,t[j]);
+//		 //Series.generate(net, 5);
+//		 double[] res = getSizes("data/9222/"+net.folder()+ "_average.txt");
+//		 bw.write(min[j] + " & " + max[j] + " & "  + res[0] + " & " + res[1] + "\\\\");
+//		 bw.newLine();
+//		}
+//	}
+//	bw.flush();
+//	bw.close();
+//	} catch (IOException e){
+//		e.printStackTrace();
+//	}
+//	try{
+//		BufferedWriter bw = new BufferedWriter(new FileWriter("table.txt"));
+//		int[] k = {1,2,3,4,5};
+//	double[] alpha = {2.2,2.3,2.4};
+//	int[] size = {5000,10000,20000,50000};
+//	int[] minDeg = {1,2,3,4,5};
+//	for (int b = 0; b < size.length; b++){
+//	for (int i = 0; i < k.length; i++){
+//		for (int a = 0; a < alpha.length; a++){
+//			
+//				for (int c = 0; c < minDeg.length; c++){
+//					Transformation[][] t = {new Transformation[]{new MaxMinBound(k[i],2*k[i])}, 
+//							new Transformation[]{new MaxMinBound(0,2*k[i])}, new Transformation[]{new MaxMinBound(k[i],Integer.MAX_VALUE)}};
+//					for (int j = 0; j < t.length; j++){
+//					 Network net = new ScaleFreeRandomGraph(size[b],alpha[a],minDeg[c],size[b],null,t[j]);
+//					 Series.generate(net, 5);
+//					}
+//				}
+//			}
+//		}
+//	}
+//		bw.flush();
+//		bw.close();
+//		} catch (IOException e){
+//			e.printStackTrace();
+//		}
+	
 	//Config.overwrite("METRICS", "DEGREE_DISTRIBUTION, CLUSTERING_COEFFICIENT");	
 	//testRandomDeg();
 //	for (int i=4; i < 6; i++){
@@ -82,12 +169,12 @@ public class Test {
 //	}
 //	ScaleFreeRandomGraph net = new ScaleFreeRandomGraph(10000,2.5,1,10000, null,null);
 //	Series.generate(net, 5);
-	String[] kadGraphs = ((new File("KAD/"))).list();
-	for (int i = 0; i < kadGraphs.length; i++){
-		 ReadableFile net = new ReadableFile(kadGraphs[i], kadGraphs[i], "KAD/"+kadGraphs[i],null,null );
-       		Series s = Series.generate(net, 100);
-       		Plot.allMulti(s, "KAD");
-	}
+//	String[] kadGraphs = ((new File("KAD/"))).list();
+//	for (int i = 0; i < kadGraphs.length; i++){
+//		 ReadableFile net = new ReadableFile(kadGraphs[i], kadGraphs[i], "KAD/"+kadGraphs[i],null,null );
+//       		Series s = Series.generate(net, 100);
+//       		Plot.allMulti(s, "KAD");
+//	}
 //	int size = Integer.parseInt(args[0]);
 //	int C = Integer.parseInt(args[1]);
 //	int iter = Integer.parseInt(args[2]);
@@ -103,14 +190,16 @@ public class Test {
 		
 	}
 	
-	private static void testEmbedding(){
-		Transformation[] t = {new Swapping(1000), new Swapping(1000,0.001, Swapping.ATTACK_KLEINBERG, Swapping.ATTACKER_SELECTION_LARGEST, 1)};
-		Network barabasi = new BarabasiAlbert(200,2,null,t);
-		Series.generate(barabasi, 1);
+	private static void testEmbedding(int iter){
+//		Transformation[] t = {new Swapping(1000), new Swapping(1000,0.001, Swapping.ATTACK_KLEINBERG, Swapping.ATTACKER_SELECTION_LARGEST, 1)};
+//		Network barabasi = new BarabasiAlbert(200,2,null,t);
+//		Series.generate(barabasi, 1);
 		
-		Transformation[] tLMC = {new LMC(1000,LMC.MODE_UNRESTRICTED, 0,""+ 0.001, 1), new LMC(1000,LMC.MODE_UNRESTRICTED, 0,""+ 0.001, 1)};
-		Network barabasLMC = new BarabasiAlbert(200,2,null,tLMC);
-		Series.generate(barabasLMC, 1);
+		
+		Transformation[] adht = {new RandomRingIDSpaceSimple(), new ADHT(iter,ADHT.NODE_TYPE_SIMPLE)};
+		RoutingAlgorithm ra =  new DepthFirstGreedy(174);
+		Network net = new ReadableFile("SPI", "SPI", "graphs/spi.txt",ra,adht);
+		Series.generate(net, 20);
 	}
 	
 	private static void testRouting(){
@@ -173,5 +262,48 @@ public class Test {
 		ScaleFreeRandomGraph seq = new ScaleFreeRandomGraph(100,2.5,1,16,null,null);
 		Series.generate(seq,1);
 	}
+	
+	private static double[] getSizes(String file){
+		double[] res = new double[2];
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(file));
+			String line;
+			while ((line = br.readLine()) != null){
+				if (line.contains("DEGREE_DISTRIBUTION_NODES")){
+					res[0] = Double.parseDouble(line.split(":  ")[1]);
+				}
+				if (line.contains("STRONG_CONNECTIVITY_LARGEST_COMPONENT_FRACTION")){
+					res[1] = Double.parseDouble(line.split(":  ")[1]);
+				}
+			}
+			br.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return res;
+	}
+	
+	private static void testingADHT(){
+		Config.overwrite("MAIN_DATA_FOLDER", "ADHT");
+		Config.overwrite("METRICS", "ROUTING, ID_DISTRIBUTION, SUCC_DISTRIBUTION");
+		String[] name = {ADHT.NODE_TYPE_SIMPLE, ADHT.NODE_TYPE_SUCC, ADHT.NODE_TYPE_ALLSUCC};
+		RoutingAlgorithm ra =  new DepthFirstGreedy(174);
+		int[] iter = {10,100,200,500,1000};
+		Series[][] ser = new Series[iter.length][3];
+		for (int i = 0; i < iter.length; i++){
+			for (int j = 0; j < 3; j++){
+		Transformation[] adht = {new RandomRingIDSpaceSimple(), new ADHT(iter[i],name[j])};
+		Network net = new ReadableFile("SPI", "SPI", "graphs/spi.txt",ra,adht);
+		   ser[i][j] = Series.generate(net, 5);
+			}
+			
+		}
+		Plot.allSingle(ser, "singlesADHT/");
+//		for (int i = 0; i < iter.length; i++){
+//			Plot.allMulti(ser[i], "multi"+iter[i]+"/");
+//		}
+		}
+	   
 
 }
