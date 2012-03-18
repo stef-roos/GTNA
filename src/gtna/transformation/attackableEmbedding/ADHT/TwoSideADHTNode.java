@@ -21,7 +21,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------
- * SimplyADHTNode.java
+ * TwoSideADHTNode.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
  * and Contributors 
@@ -35,44 +35,27 @@
  */
 package gtna.transformation.attackableEmbedding.ADHT;
 
-import gtna.graph.Graph;
-import gtna.transformation.attackableEmbedding.AttackableEmbeddingNode;
-import gtna.transformation.attackableEmbedding.lmc.LMCNode;
-
 import java.util.Random;
 import java.util.Vector;
+
+import gtna.graph.Graph;
 
 /**
  * @author stef
  *
  */
-public class SimpleADHTNode extends AttackableEmbeddingNode {
+public class TwoSideADHTNode extends SimpleADHTNode {
+
 	/**
 	 * @param index
 	 * @param g
+	 * @param adht
 	 */
-	public SimpleADHTNode(int index, Graph g, ADHT adht) {
-		super(index, g);
-		this.adht = adht;
+	public TwoSideADHTNode(int index, Graph g, ADHT adht) {
+		super(index, g, adht);
+		// TODO Auto-generated constructor stub
 	}
-
-	protected ADHT adht;
-
-	/* (non-Javadoc)
-	 * @see gtna.transformation.attackableEmbedding.AttackableEmbeddingNode#updateNeighbors(java.util.Random)
-	 */
-	@Override
-	public void updateNeighbors(Random rand) {
-		int[] out = this.getOutgoingEdges();
-		 for (int i = 0; i < out.length; i++) {
-		    this.knownIDs[i] = ((SimpleADHTNode) this.getGraph().getNode(out[i])).ask(this, rand);
-		 }
-
-	}
-
-	/* (non-Javadoc)
-	 * @see gtna.transformation.attackableEmbedding.AttackableEmbeddingNode#turn(java.util.Random)
-	 */
+	
 	@Override
 	public void turn(Random rand) {
 		Vector<Integer> index = new Vector<Integer>();
@@ -80,8 +63,10 @@ public class SimpleADHTNode extends AttackableEmbeddingNode {
 		int countOld = 0;
 		double oldID = this.ask(this,rand);
 		double log2 = Math.log(2);
+		double d;
 		for (int i = 0; i < this.knownIDs.length; i++){
-        	k = (int) Math.min(Math.floor(Math.log(1/dist(oldID,knownIDs[i]))/log2), this.adht.upBound);
+			d = distSigned(oldID,knownIDs[i]);
+        	k = (int) (Math.min(Math.floor(Math.log(1/Math.abs(d))/log2), this.adht.upBound)*Math.signum(d));
         	if (!index.contains(k)){
         		countOld++;
         		index.add(k);
@@ -92,7 +77,8 @@ public class SimpleADHTNode extends AttackableEmbeddingNode {
         index = new Vector<Integer>();
         int countNew = 0;
         for (int i = 0; i < this.knownIDs.length; i++){
-        	k = (int) Math.min(Math.floor(Math.log(1/dist(newID,knownIDs[i]))/log2), this.adht.upBound);
+        	d = distSigned(newID,knownIDs[i]);
+        	k = (int) (Math.min(Math.floor(Math.log(1/Math.abs(d))/log2), this.adht.upBound)*Math.signum(d));
         	if (!index.contains(k)){
         		countNew++;
         		index.add(k);
@@ -104,15 +90,12 @@ public class SimpleADHTNode extends AttackableEmbeddingNode {
         }
 	}
 	
-	protected double dist(double a, double b){
-		return Math.min(Math.min(1-a+b,1-b+a), Math.abs(b-a));
+	public double distSigned(double a, double b){
+		double d = b -a;
+		if (d < -0.5){
+			d++;
+		} 
+		return d;
 	}
-	
-	 protected double ask(SimpleADHTNode caller, Random rand) {
-		    if (this.adht == null){
-		    	System.out.println("null index");
-		    }
-	        return this.adht.getIds()[this.getIndex()].getPosition();
-	 }
 
 }

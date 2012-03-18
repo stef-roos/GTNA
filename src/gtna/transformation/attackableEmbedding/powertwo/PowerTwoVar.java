@@ -21,7 +21,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------
- * ADHT.java
+ * PowerTwoVar.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
  * and Contributors 
@@ -33,7 +33,7 @@
  * ---------------------------------------
  *
  */
-package gtna.transformation.attackableEmbedding.ADHT;
+package gtna.transformation.attackableEmbedding.powertwo;
 
 import gtna.graph.Graph;
 import gtna.graph.GraphProperty;
@@ -42,8 +42,16 @@ import gtna.id.DIdentifierSpace;
 import gtna.id.ring.RingIdentifier;
 import gtna.transformation.attackableEmbedding.AttackableEmbedding;
 import gtna.transformation.attackableEmbedding.AttackableEmbeddingNode;
+import gtna.transformation.attackableEmbedding.ADHT.AllSuccADHTNode;
+import gtna.transformation.attackableEmbedding.ADHT.DiverseADHTNode;
+import gtna.transformation.attackableEmbedding.ADHT.PreferCloseADHTNode;
+import gtna.transformation.attackableEmbedding.ADHT.RandDecisionADHTNode;
+import gtna.transformation.attackableEmbedding.ADHT.RandSuccADHTNode;
+import gtna.transformation.attackableEmbedding.ADHT.RestrictNumberADHTNode;
+import gtna.transformation.attackableEmbedding.ADHT.RestrictSizeADHTNode;
+import gtna.transformation.attackableEmbedding.ADHT.SimpleADHTNode;
+import gtna.transformation.attackableEmbedding.ADHT.SuccADHTNode;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
 
@@ -51,34 +59,18 @@ import java.util.Random;
  * @author stef
  *
  */
-public class ADHT extends AttackableEmbedding {
+public class PowerTwoVar extends AttackableEmbedding{
 
 	public static final String NODE_TYPE_SIMPLE = "SIMPLE";
 	
-	public static final String NODE_TYPE_SUCC = "SUCC";
-	
-	public static final String NODE_TYPE_ALLSUCC = "ALL";
-	
-	public static final String NODE_TYPE_RSUCC = "RSUCC";
-	
-	public static final String NODE_TYPE_CLOSE = "CLOSE";
-	
-	public static final String NODE_TYPE_RAND = "RAND";
-	
-	public static final String NODE_TYPE_RESSIZE = "RESSIZE";
-	
-	public static final String NODE_TYPE_RESNUMB = "RESNUMB";
-	
-	public static final String NODE_TYPE_DIVERSE = "DIVERSE";
-	
-	public static final String NODE_TYPE_SA = "SA";
-	
 	public static final String NODE_TYPE_TWOSIDE = "TWOSIDE";
 	
-	public static final String NODE_TYPE_OUTLIER = "OUTLIER";
-
+	public static final String NODE_TYPE_MOD = "MOD";
+	
+	public static final String NODE_TYPE_CEN = "CENTRAL";
+	
 	public static final String ATTACK_NONE = "NONE";
-
+	
 	public static final String ATTACKER_SELECTION_LARGEST = "LARGEST";
 
 	public static final String ATTACKER_SELECTION_SMALLEST = "SMALLEST";
@@ -101,51 +93,31 @@ public class ADHT extends AttackableEmbedding {
 
 	protected int attackers;
 	
-	protected int minForSucc = 13;
+	protected double exponent;
 	
 	protected int upBound;
 	
-	protected double out; 
-	
-	private int[][] BC;
-	
-	protected double[] exp;
-	
-	protected double[] var;
+	protected int minForSucc;
 	
 
-	public ADHT(int iterations, String nodeType,double out) {
-		this(iterations, nodeType, out,ATTACK_NONE,
+	public PowerTwoVar(int iterations, double exponent, int succ, int upBound, String nodeType) {
+		this(iterations,exponent, succ, upBound, nodeType, ATTACK_NONE,
 				ATTACKER_SELECTION_NONE, 0);
 	}
 	
-	public ADHT(int iterations, String nodeType, int succ, double out) {
-		this(iterations, nodeType, out,ATTACK_NONE,
-				ATTACKER_SELECTION_NONE, 0, succ, Integer.MAX_VALUE);
-	}
 	
-	public ADHT(int iterations, String nodeType, double out, int succ, int upBound) {
-		this(iterations, nodeType, out, ATTACK_NONE,
-				ATTACKER_SELECTION_NONE, 0, succ, upBound);
-	}
-
 	
-	public ADHT(int iterations, String nodeType, double out,
+	public PowerTwoVar(int iterations, double exponent, int succ, int upBound,  String nodeType, 
 			String attack, String attackerSelection, int attackers) {
-		this(iterations, nodeType,out,attack,attackerSelection,attackers,13,Integer.MAX_VALUE);
-	}
-	
-	public ADHT(int iterations, String nodeType, double out,
-			String attack, String attackerSelection, int attackers, int succ, int upBound) {
-		super(iterations, "ADHT", new String[] { "ITERATIONS","MINSUCC", "UPBOUND", "NODETYPE","OUT", "ATTACK", "ATTACKERSELECTION", "ATTACKERS" },
-				new String[] { "" + iterations, ""+succ,""+upBound, nodeType, ""+out,  attack, attackerSelection, "" + attackers });
+		super(iterations, "POWER_TWO_VAR", new String[] { "ITERATIONS","EXPONENT", "MINSUCC", "UPBOUND", "NODETYPE", "ATTACK", "ATTACKERSELECTION", "ATTACKERS" },
+				new String[] { "" + iterations, ""+exponent, ""+succ,""+upBound, nodeType,  attack, attackerSelection, "" + attackers });
 		this.nodeType = nodeType;
 		this.attack = attack;
 		this.attackerSelection = attackerSelection;
 		this.attackers = attackers;
 		this.minForSucc = succ;
 		this.upBound = upBound;
-		this.out = out;
+		this.exponent = exponent;
 	}
 
 	protected AttackableEmbeddingNode[] generateNodes(Graph g, Random rand) {
@@ -185,53 +157,21 @@ public class ADHT extends AttackableEmbedding {
 			} else {
 				boolean success = false;
 				if (this.nodeType == NODE_TYPE_SIMPLE){
-				  nodes[i] = new SimpleADHTNode(i, g, this);
+				  nodes[i] = new SimpleP2Node(i, g, this);
 				  success = true;
 				}
-				if (this.nodeType == NODE_TYPE_SUCC){
-					  nodes[i] = new SuccADHTNode(i, g, this);
-					  success = true;
-				}
-				if (this.nodeType == NODE_TYPE_ALLSUCC){
-					  nodes[i] = new AllSuccADHTNode(i, g, this);
-					  success = true;
-				}
-				if (this.nodeType == NODE_TYPE_CLOSE){
-					  nodes[i] = new PreferCloseADHTNode(i, g, this);
-					  success = true;
-				}
-				if (this.nodeType == NODE_TYPE_RSUCC){
-					  nodes[i] = new RandSuccADHTNode(i, g, this);
-					  success = true;
-				}
-				if (this.nodeType == NODE_TYPE_RAND){
-					  nodes[i] = new RandDecisionADHTNode(i, g, this);
-					  success = true;
-				}
-				if (this.nodeType == NODE_TYPE_RESSIZE){
-					  nodes[i] = new RestrictSizeADHTNode(i, g, this);
-					  success = true;
-				}
-				if (this.nodeType == NODE_TYPE_RESNUMB){
-					  nodes[i] = new RestrictNumberADHTNode(i, g, this);
-					  success = true;
-				}
-				if (this.nodeType == NODE_TYPE_DIVERSE){
-					  nodes[i] = new DiverseADHTNode(i, g, this);
-					  success = true;
-				}
-				if (this.nodeType == NODE_TYPE_SA){
-					  nodes[i] = new SAADHTNode(i, g, this);
-					  success = true;
-				}
 				if (this.nodeType == NODE_TYPE_TWOSIDE){
-					  nodes[i] = new TwoSideADHTNode(i, g, this);
+					  nodes[i] = new TwoSideP2Node(i, g, this);
 					  success = true;
-				}
-				if (this.nodeType == NODE_TYPE_OUTLIER){
-					  nodes[i] = new OutlierADHTNode(i, g, this);
+					}
+				if (this.nodeType == NODE_TYPE_MOD){
+					  nodes[i] = new ModP2Node(i, g, this);
 					  success = true;
-				}
+					}
+				if (this.nodeType == NODE_TYPE_CEN){
+					  nodes[i] = new CentralP2Node(i, g, this);
+					  success = true;
+					}
 				if (!success){
 					throw new IllegalArgumentException(this.nodeType
 							+ " is an unknown type in ADHT");
@@ -240,9 +180,6 @@ public class ADHT extends AttackableEmbedding {
 		}
 		this.init(g, nodes);
 		this.initIds(g);
-		if (this.nodeType == NODE_TYPE_OUTLIER){
-			this.calculateExpVar(nodes);
-		}
 		return nodes;
 	}
 
@@ -277,64 +214,10 @@ public class ADHT extends AttackableEmbedding {
 	 */
 	@Override
 	public RingIdentifier[] getIds() {
+		
 		return this.ids;
 	}
-	
-	private void calculateExpVar(Node[] nodes){
-		int maxDeg = 0;
-		for (int i = 0; i < nodes.length; i++){
-			if (nodes[i].getOutDegree() > maxDeg){
-				maxDeg = nodes[i].getOutDegree();
-			}
-		}
-		this.initializeBC(Math.max(maxDeg,this.upBound));
-		HashMap<Integer, double[]> degreeVal = new HashMap<Integer,double[]>();
-		exp = new double[nodes.length];
-		var = new double[nodes.length];
-		double[] res;
-		for (int i = 0; i < nodes.length; i++){
-			res = degreeVal.get(nodes[i].getOutDegree());
-			if (res == null){
-			    res = new double[2];
-			    double[] prop = new double[Math.min(this.upBound,nodes[i].getOutDegree())+1];
-			    double sum = 0;
-			    for (int j = 1; j < prop.length; j++){
-			    	prop[j] = nchoosek(this.upBound,j)*nchoosek(nodes[i].getOutDegree()-1,j-1);
-			    	sum = sum + prop[j];
-			    }
-			    for (int j = 1; j < prop.length; j++){
-			    	prop[j] = prop[j]/sum;
-			    }
-			    for (int k = 1; k < prop.length; k++){
-			    	res[0] = res[0] + k*prop[k];
-			    	res[1] = res[1] + k*k*prop[k];
-			    }
-			    res[1] = Math.sqrt(res[1] - res[0]*res[0]);
-			    degreeVal.put(nodes[i].getOutDegree(), res);
-			}
-			exp[i] = res[0];
-			var[i] = res[1];
-			
-		}
-		
-	}
-	
-	private int nchoosek(int n, int k){
-		if (n < 0 || k < 0 || k > n){
-			return 0;
-		}
-		return this.BC[n][k];
-	}
-	
-	private void initializeBC(int max){
-		this.BC = new int[max+1][max+2];
-		this.BC[0][0] = 1;
-		for (int i = 1; i < max+1; i++){
-			this.BC[i][0] = 1;
-			for (int j = 1; j < i+2; j++){
-				this.BC[i][j] = this.BC[i-1][j-1] + this.BC[i-1][j];
-			}
-		}
-	}
+
+
 
 }

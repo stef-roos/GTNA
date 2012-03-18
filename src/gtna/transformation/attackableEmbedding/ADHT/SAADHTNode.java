@@ -21,7 +21,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------
- * SimplyADHTNode.java
+ * SAADHTNode.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
  * and Contributors 
@@ -35,49 +35,33 @@
  */
 package gtna.transformation.attackableEmbedding.ADHT;
 
-import gtna.graph.Graph;
-import gtna.transformation.attackableEmbedding.AttackableEmbeddingNode;
-import gtna.transformation.attackableEmbedding.lmc.LMCNode;
-
 import java.util.Random;
 import java.util.Vector;
+
+import gtna.graph.Graph;
 
 /**
  * @author stef
  *
  */
-public class SimpleADHTNode extends AttackableEmbeddingNode {
+public class SAADHTNode extends SimpleADHTNode {
+     int count = 0;
 	/**
 	 * @param index
 	 * @param g
+	 * @param adht
 	 */
-	public SimpleADHTNode(int index, Graph g, ADHT adht) {
-		super(index, g);
-		this.adht = adht;
+	public SAADHTNode(int index, Graph g, ADHT adht) {
+		super(index, g, adht);
+		// TODO Auto-generated constructor stub
 	}
-
-	protected ADHT adht;
-
-	/* (non-Javadoc)
-	 * @see gtna.transformation.attackableEmbedding.AttackableEmbeddingNode#updateNeighbors(java.util.Random)
-	 */
-	@Override
-	public void updateNeighbors(Random rand) {
-		int[] out = this.getOutgoingEdges();
-		 for (int i = 0; i < out.length; i++) {
-		    this.knownIDs[i] = ((SimpleADHTNode) this.getGraph().getNode(out[i])).ask(this, rand);
-		 }
-
-	}
-
-	/* (non-Javadoc)
-	 * @see gtna.transformation.attackableEmbedding.AttackableEmbeddingNode#turn(java.util.Random)
-	 */
+	
 	@Override
 	public void turn(Random rand) {
 		Vector<Integer> index = new Vector<Integer>();
 		int k;
 		int countOld = 0;
+		count++;
 		double oldID = this.ask(this,rand);
 		double log2 = Math.log(2);
 		for (int i = 0; i < this.knownIDs.length; i++){
@@ -98,21 +82,14 @@ public class SimpleADHTNode extends AttackableEmbeddingNode {
         		index.add(k);
         	}
         }
-        
-        if (countNew > countOld){
-        	this.adht.getIds()[this.getIndex()].setPosition(newID);
-        }
+       
+//        if (countNew > countOld){
+//        	this.adht.getIds()[this.getIndex()].setPosition(newID);
+//        }
+        if (rand.nextDouble() < Math.pow((double)countNew/(double)(countOld+1),(double)1/(double)count)){
+        	//System.out.println("changed " + (double)countNew/(double)countOld);
+			this.adht.getIds()[this.getIndex()].setPosition(newID);
+		} 
 	}
-	
-	protected double dist(double a, double b){
-		return Math.min(Math.min(1-a+b,1-b+a), Math.abs(b-a));
-	}
-	
-	 protected double ask(SimpleADHTNode caller, Random rand) {
-		    if (this.adht == null){
-		    	System.out.println("null index");
-		    }
-	        return this.adht.getIds()[this.getIndex()].getPosition();
-	 }
 
 }

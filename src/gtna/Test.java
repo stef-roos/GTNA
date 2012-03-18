@@ -60,6 +60,7 @@ import gtna.routing.greedyVariations.OneWorseGreedy;
 import gtna.routing.greedyVariations.PureGreedy;
 import gtna.transformation.Transformation;
 import gtna.transformation.attackableEmbedding.ADHT.ADHT;
+import gtna.transformation.attackableEmbedding.powertwo.PowerTwoVar;
 import gtna.transformation.failure.node.LargestFailure;
 import gtna.transformation.failure.node.RandomFailure;
 import gtna.transformation.id.RandomRingIDSpaceSimple;
@@ -77,21 +78,26 @@ public class Test {
 	
 	public static void main(String[] args){
 		//testingADHT();
+		double[] outs = {2,2.5,3,3.5,4,4.5,5,100};
+		for (int i = 0; i < outs.length; i++){
+		   testingADHT(1000, outs[i], 13,18, ADHT.NODE_TYPE_OUTLIER,20);
+		}
+//		testingP2(1000,new double[] {0.5,1},13,18, PowerTwoVar.NODE_TYPE_CEN,10);
 		//Config.overwrite("MAIN_DATA_FOLDER", "ADHT2");
-		Config.overwrite("METRICS", "DEGREE_DISTRIBUTION, ROUTING, ID_DISTRIBUTION, SUCC_DISTRIBUTION");
-		int[] max = {14,15,16,17,18,Integer.MAX_VALUE};
-		int[] iter ={10,100,200,500,1000,2000,6000};
-		for (int i = max.length-1; i > -1; i--){
-			for (int j = 0; j < iter.length; j++){
-		Transformation[][] adht = {new Transformation[]{new RandomRingIDSpaceSimple(), new ADHT(iter[j],ADHT.NODE_TYPE_DIVERSE,13,max[i])}};
-		RoutingAlgorithm ra =  new DepthFirstGreedy(174);
-		for (int k = 0; k < adht.length; k++){
-		Network net = new ReadableFile("SPI", "SPI", "graphs/spi.txt",ra,adht[k]);
-		Series ser = Series.generate(net, 25);
-		//Plot.allMulti(ser, "multiDi");
-		}
-		}
-		}
+//		Config.overwrite("METRICS", "DEGREE_DISTRIBUTION, ROUTING, ID_DISTRIBUTION, SUCC_DISTRIBUTION");
+//		int[] max = {14,15,16,17,18,Integer.MAX_VALUE};
+//		int[] iter ={10,100,200,500,1000,2000,6000};
+//		for (int i = max.length-1; i > -1; i--){
+//			for (int j = 0; j < iter.length; j++){
+//		Transformation[][] adht = {new Transformation[]{new RandomRingIDSpaceSimple(), new ADHT(iter[j],ADHT.NODE_TYPE_DIVERSE,13,max[i])}};
+//		RoutingAlgorithm ra =  new DepthFirstGreedy(174);
+//		for (int k = 0; k < adht.length; k++){
+//		Network net = new ReadableFile("SPI", "SPI", "graphs/spi.txt",ra,adht[k]);
+//		Series ser = Series.generate(net, 25);
+//		//Plot.allMulti(ser, "multiDi");
+//		}
+//		}
+//		}
 //		int[] succValues = {5,6,7,8,9,10,11,12};
 //		for (int i = 0; i < succValues.length; i++){
 //		Transformation[][] adht = {new Transformation[]{new RandomRingIDSpaceSimple(), new ADHT(1000,ADHT.NODE_TYPE_SUCC, succValues[i])},
@@ -196,10 +202,10 @@ public class Test {
 //		Series.generate(barabasi, 1);
 		
 		
-		Transformation[] adht = {new RandomRingIDSpaceSimple(), new ADHT(iter,ADHT.NODE_TYPE_SIMPLE)};
-		RoutingAlgorithm ra =  new DepthFirstGreedy(174);
-		Network net = new ReadableFile("SPI", "SPI", "graphs/spi.txt",ra,adht);
-		Series.generate(net, 20);
+		//Transformation[] adht = {new RandomRingIDSpaceSimple(), new ADHT(iter,1.0,ADHT.NODE_TYPE_SIMPLE)};
+//		RoutingAlgorithm ra =  new DepthFirstGreedy(174);
+//		Network net = new ReadableFile("SPI", "SPI", "graphs/spi.txt",ra,adht);
+//		Series.generate(net, 20);
 	}
 	
 	private static void testRouting(){
@@ -284,25 +290,30 @@ public class Test {
 		return res;
 	}
 	
-	private static void testingADHT(){
-		Config.overwrite("MAIN_DATA_FOLDER", "ADHT");
+	private static void testingADHT(int iter, double out, int minSucc, int up, String nodeType, int runs){
+		Config.overwrite("MAIN_DATA_FOLDER", "ADHTNew");
 		Config.overwrite("METRICS", "ROUTING, ID_DISTRIBUTION, SUCC_DISTRIBUTION");
-		String[] name = {ADHT.NODE_TYPE_SIMPLE, ADHT.NODE_TYPE_SUCC, ADHT.NODE_TYPE_ALLSUCC};
+		String[] name = {nodeType};
 		RoutingAlgorithm ra =  new DepthFirstGreedy(174);
-		int[] iter = {10,100,200,500,1000};
-		Series[][] ser = new Series[iter.length][3];
-		for (int i = 0; i < iter.length; i++){
-			for (int j = 0; j < 3; j++){
-		Transformation[] adht = {new RandomRingIDSpaceSimple(), new ADHT(iter[i],name[j])};
+		
+		
+		Transformation[] adht = {new RandomRingIDSpaceSimple(), new ADHT(iter,name[0], out, minSucc, up)};
 		Network net = new ReadableFile("SPI", "SPI", "graphs/spi.txt",ra,adht);
-		   ser[i][j] = Series.generate(net, 5);
-			}
-			
+		Series.generate(net, runs);
+		
 		}
-		Plot.allSingle(ser, "singlesADHT/");
-//		for (int i = 0; i < iter.length; i++){
-//			Plot.allMulti(ser[i], "multi"+iter[i]+"/");
-//		}
+	
+	private static void testingP2(int iter, double[] exponent, int minSucc, int up, String nodeType, int runs){
+		Config.overwrite("MAIN_DATA_FOLDER", "P2EXPO");
+		Config.overwrite("METRICS", "ROUTING, ID_DISTRIBUTION, SUCC_DISTRIBUTION");
+		String[] name = {nodeType};
+		RoutingAlgorithm ra =  new DepthFirstGreedy(174);
+		
+		for (int i = 0; i < exponent.length; i++){
+		Transformation[] adht = {new RandomRingIDSpaceSimple(), new PowerTwoVar(iter,exponent[i], minSucc, up, name[0])};
+		Network net = new ReadableFile("SPI", "SPI", "graphs/spi.txt",ra,adht);
+		Series.generate(net, runs);
+		}
 		}
 	   
 
