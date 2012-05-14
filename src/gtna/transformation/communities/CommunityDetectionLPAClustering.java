@@ -69,7 +69,7 @@ public class CommunityDetectionLPAClustering extends Transformation {
 	 *            nodes.
 	 */
 	public CommunityDetectionLPAClustering(int limitFactor) {
-		super("COMMUNITY_DETECTION_LPA_CLUSTER", new Parameter[] { new IntParameter(
+		super("COMMUNITY_DETECTION_LPA_CLUSTERING", new Parameter[] { new IntParameter(
 				"LIMIT_FACTOR", limitFactor) });
 		this.iterationLimitFactor = limitFactor;
 	}
@@ -173,7 +173,7 @@ public class CommunityDetectionLPAClustering extends Transformation {
 		int count1,count2,n1;
 		int[] out,out2;
 		for (int i = 0; i < nodes.length; i++){
-			weights[i] = new double[nodes[i].getInDegree()];
+			weights[i] = new double[nodes[i].getOutDegree()];
 			out = nodes[i].getOutgoingEdges();
 			for (int j=0; j < out.length; j++){
 				if (nodes[i].getInDegree() == 1){
