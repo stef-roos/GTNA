@@ -143,7 +143,7 @@ public abstract class AttackerIQDMDEmbedding extends IQDMDEmbedding {
 			DistanceMD distance, int dimension, double epsilon,
 			boolean checkold, boolean adjustOne, Parameter[] parameters, boolean add) {
 		super(iterations, key, idMethod, deMethod, distance, dimension, epsilon,
-				checkold, adjustOne,  parameters, true);
+				checkold, adjustOne,  parameters, add);
 		this.attackertype = AttackerType.NONE;
 		this.attackerselection = AttackerSelection.RANDOM;
 		this.attackercount = 0;
