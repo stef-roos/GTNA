@@ -21,12 +21,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------
- * DepthFirstGreedyNoState.java
+ * OneWorseGreedyNoInfo.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
  * and Contributors 
  *
- * Original Author: stefanie;
+ * Original Author: stef;
  * Contributors:    -;
  *
  * Changes since 2011-05-17
@@ -53,10 +53,11 @@ import java.util.HashMap;
 import java.util.Random;
 
 /**
- * @author stefanie
+ * @author stef
  *
  */
-public class DepthFirstGreedyNoInfo extends RoutingAlgorithm {
+public class OneWorseGreedyNoInfo extends RoutingAlgorithm{
+
 	int ttl;
 	private DIdentifierSpace idSpaceD;
 
@@ -68,13 +69,13 @@ public class DepthFirstGreedyNoInfo extends RoutingAlgorithm {
 	HashMap<Integer, int[]> from;
 	boolean[][] contacted;
 	
-	public DepthFirstGreedyNoInfo() {
-		super("DEPTH_FIRST_GREEDY_NOINFO");
+	public OneWorseGreedyNoInfo() {
+		super("ONE_WORSE_GREEDY_NOINFO");
 		this.ttl = Integer.MAX_VALUE;
 	}
 
-	public DepthFirstGreedyNoInfo(int ttl) {
-		super("DEPTH_FIRST_GREEDY_NOINFO");
+	public OneWorseGreedyNoInfo(int ttl) {
+		super("ONE_WORSE_GREEDY_NOINFO");
 		this.ttl = ttl;
 	}
 
@@ -93,7 +94,7 @@ public class DepthFirstGreedyNoInfo extends RoutingAlgorithm {
 			Random rand) {
 		if (this.idSpaceD != null) {
 			return this.routeD(new ArrayList<Integer>(), start,
-					(DIdentifier) target, rand, graph.getNodes(), false,-1);
+					(DIdentifier) target, rand, graph.getNodes(),-1);
 		} else {
 			return null;
 		}
@@ -110,19 +111,18 @@ public class DepthFirstGreedyNoInfo extends RoutingAlgorithm {
 		contacted = new boolean[seen.length][];
 		from = new HashMap<Integer,int[]>();
 		return this.routeD(new ArrayList<Integer>(), start, target, rand,
-				graph.getNodes(), false, -1);
+				graph.getNodes(), -1);
 	}
 
 	private Route routeD(ArrayList<Integer> route, int current,
-			DIdentifier target, Random rand, Node[] nodes, boolean back,int last) {
+			DIdentifier target, Random rand, Node[] nodes, int last) {
 		route.add(current);
-		if (!back && seen[current]){
+		if (last ==-1 && seen[current]){
 			int[] pres = from.get(current);
-			return this.routeD(route, pres[1]==-1?pres[0]:pres[1], target, rand, nodes,true, current);
+			return this.routeD(route, pres[1]==-1?pres[0]:pres[1], target, rand, nodes, current);
 		}
-		if (!seen[current]){
+		if (contacted[current] == null){
 			contacted[current] = new boolean[nodes[current].getOutDegree()];
-			seen[current] = true;
 		}
 		if (this.idSpaceD.getPartitions()[current].contains(target)) {
 			return new RouteImpl(route, true);
@@ -134,6 +134,8 @@ public class DepthFirstGreedyNoInfo extends RoutingAlgorithm {
 		if (route.size() > this.ttl) {
 			return new RouteImpl(route, false);
 		}
+		double currentDist = this.idSpaceD.getPartitions()[current]
+				.distance(target);
 		double minDist = this.idSpaceD.getMaxDistance();
 		int minNode = -1;
 		int minIndex = -1;
@@ -149,12 +151,15 @@ public class DepthFirstGreedyNoInfo extends RoutingAlgorithm {
 				minIndex = i;
 			}
 		}
+		if (minDist >= currentDist){
+			seen[current] = true;
+		}
 		if (minNode == -1) {
 			int[] pre = from.get(current);
 			if (pre == null)
 			return new RouteImpl(route, false);
 			else {
-				return this.routeD(route, pre[0], target, rand, nodes, true,current);	
+				return this.routeD(route, pre[0], target, rand, nodes, current);	
 			}
 		} else{
 		   int[] pre = from.get(minNode);
@@ -166,9 +171,12 @@ public class DepthFirstGreedyNoInfo extends RoutingAlgorithm {
 		   } else {
 			   pre[1] = current;
 		   }
-		   contacted[current][minIndex] = true;
 		}
-		   return this.routeD(route, minNode, target, rand, nodes, false,current);
+		if (minDist < currentDist){
+		   return this.routeD(route, minNode, target, rand, nodes, -1);
+		} else {
+			 return this.routeD(route, minNode, target, rand, nodes, current);
+		}
 			
 	}
 
@@ -193,5 +201,4 @@ public class DepthFirstGreedyNoInfo extends RoutingAlgorithm {
 			this.dsl = (DataStorageList) graph.getProperty("DATA_STORAGE_0");
 		}
 	}
-
 }
