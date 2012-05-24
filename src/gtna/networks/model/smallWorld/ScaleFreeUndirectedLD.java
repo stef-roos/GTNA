@@ -61,8 +61,7 @@ public class ScaleFreeUndirectedLD extends Network {
 	private double alpha;
 	private int cutoff;
 
-	public ScaleFreeUndirectedLD(int nodes, double alpha, int cutoff,
-			RoutingAlgorithm ra, Transformation[] t) {
+	public ScaleFreeUndirectedLD(int nodes, double alpha, int cutoff, Transformation[] t) {
 		super("SCALE_FREE_UNDIRECTED_LD", nodes, new Parameter[] {
 				new DoubleParameter("ALPHA", alpha),
 				new IntParameter("CUTOFF", cutoff) }, t);
