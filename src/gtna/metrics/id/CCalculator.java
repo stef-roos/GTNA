@@ -38,26 +38,36 @@ package gtna.metrics.id;
 import gtna.data.Single;
 import gtna.graph.Graph;
 import gtna.graph.Node;
-import gtna.id.DPartition;
+import gtna.id.DIdentifierSpace;
+import gtna.id.Partition;
 import gtna.id.ring.RingIdentifierSpace;
 import gtna.id.ring.RingIdentifierSpaceSimple;
 import gtna.id.ring.RingPartitionSimple;
+import gtna.io.DataWriter;
 import gtna.metrics.Metric;
 import gtna.networks.Network;
+import gtna.util.Distribution;
+import gtna.util.Timer;
 
+import java.util.Arrays;
 import java.util.HashMap;
+
+import com.mysql.jdbc.Util;
 
 /**
  * @author stefanie
  *
  */
 public class CCalculator extends Metric {
-
+     private Distribution C;
+     private Timer runtime;
+     
+	
 	/**
 	 * @param key
 	 */
 	public CCalculator() {
-		super("CCALCULATOR");
+		super("C");
 		// TODO Auto-generated constructor stub
 	}
 
@@ -66,38 +76,64 @@ public class CCalculator extends Metric {
 	 */
 	@Override
 	public void computeData(Graph g, Network n, HashMap<String, Metric> m) {
-		// TODO Auto-generated method stub
-
+		runtime = new Timer();
+		DIdentifierSpace idSpace = (DIdentifierSpace) g.getProperty("ID_SPACE_0");
+        Partition<Double>[] parts = idSpace.getPartitions();  
+        double[] count = new double[1];
+        double[] sorted = this.getSortedIDs(parts);
+        int[] cur;
+        Node[] nodes = g.getNodes();
+        for (int i = 0; i < parts.length; i++){
+        	cur = getCForNode(nodes,i,parts,sorted);
+        	if (Math.max(cur[0],cur[1]) >= count.length){
+        		count = this.expand(count, Math.max(cur[0],cur[1])+1);
+        	}
+        	count[cur[0]]++;
+        	count[cur[1]]++;
+        }
+        for (int i = 0; i < count.length; i++){
+        	count[i] = count[i]/(double)(2*nodes.length);
+        }
+        this.C = new Distribution(count);
+        runtime.end();
 	}
 	
-	private HashMap<Integer,Integer> getMap(DPartition[] parts){
-		HashMap<Integer,Integer> map = new HashMap<Integer,Integer>();
-		double[] 
-		return map;
+	private double[] getSortedIDs(Partition<Double>[] parts){
+		double[] vals = new double[parts.length];
+		for (int i = 0; i < vals.length; i++){
+			vals[i] = ((RingPartitionSimple)parts[i]).getId().getPosition();
+		}
+		Arrays.sort(vals);
+		return vals;
 	}
 	
-	private int[] getC(Node[] nodes, int index, DPartition[] parts, HashMap<Integer,Integer> map){
+	private int[] getCForNode(Node[] nodes, int index, Partition<Double>[] parts, double[] sortedIDs){
 		Node cur = nodes[index];
 		double left = 1;
 		double right = 1;
-		int indexLeft = -1, indexRight=-1;
+		double idLeft = -1, idRight=-1;
 		int[] out = cur.getOutgoingEdges();
 		double curID = ((RingPartitionSimple)parts[index]).getId().getPosition();
 		double d;
 		for (int j = 0; j < out.length; j++){
-			double id = ((RingPartitionSimple)parts[index]).getId().getPosition();
+			double id = ((RingPartitionSimple)parts[out[j]]).getId().getPosition();
 			d = clockwiseDist(curID, id);
 			if (d < left){
 				left = d;
-				indexLeft = out[j];
+				idLeft = id;
 			}
 			d = 1-d;
 			if (d < right){
 				right = d;
-				indexRight = out[j];
+				idRight = id;
 			}
 		}
-		int[] res = {indexLeft, indexRight};
+		int sIndex = Arrays.binarySearch(sortedIDs, curID);
+		int lIndex = Arrays.binarySearch(sortedIDs, idLeft);
+		int rIndex = Arrays.binarySearch(sortedIDs, idRight);
+		//System.out.println(index + " " + sIndex + " " + lIndex + " " + rIndex + " ");
+		int[] res = {Math.min(Math.abs(sIndex-lIndex), Math.min(sortedIDs.length + sIndex - lIndex, sortedIDs.length - sIndex + lIndex)), 
+				Math.min(Math.abs(sIndex-rIndex), Math.min(sortedIDs.length + sIndex - rIndex, sortedIDs.length - sIndex + rIndex))};
 		return res;
 	}
 	
@@ -114,8 +150,13 @@ public class CCalculator extends Metric {
 	 */
 	@Override
 	public boolean writeData(String folder) {
-		// TODO Auto-generated method stub
-		return false;
+		boolean success = true;
+		success &= DataWriter.writeWithIndex(
+				this.C.getDistribution(),
+				"C_DISTRIBUTION", folder);
+		success &= DataWriter.writeWithIndex(this.C.getCdf(),
+				"C_DISTRIBUTION_CDF", folder);
+		return success;
 	}
 
 	/* (non-Javadoc)
@@ -123,8 +164,12 @@ public class CCalculator extends Metric {
 	 */
 	@Override
 	public Single[] getSingles() {
-		// TODO Auto-generated method stub
-		return null;
+		Single avg = new Single("C_AVG",this.C.getAverage());
+		Single max = new Single("C_MAX",this.C.getMax());
+		Single min = new Single("C_MIN",this.C.getMin());
+		Single med = new Single("C_MEDIAN",this.C.getMedian());
+		Single time = new Single("C_RUNTIME", this.runtime.getRuntime());
+		return new Single[]{avg,max,min,med,time};
 	}
 
 	/* (non-Javadoc)
@@ -135,6 +180,14 @@ public class CCalculator extends Metric {
 		return g.hasProperty("ID_SPACE_0")
 				&& (g.getProperty("ID_SPACE_0") instanceof RingIdentifierSpace ||
 						g.getProperty("ID_SPACE_0") instanceof RingIdentifierSpaceSimple	);
+	}
+	
+	private double[] expand(double[] array, int size) {
+	    double[] temp = new double[size];
+	    System.arraycopy(array, 0, temp, 0, array.length);
+	    for(int j = array.length; j < size; j++)
+	        temp[j] = 0;
+	    return temp;
 	}
 
 }
