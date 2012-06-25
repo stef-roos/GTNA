@@ -48,11 +48,11 @@ import gtna.metrics.Metric;
 import gtna.networks.Network;
 import gtna.util.Distribution;
 import gtna.util.Timer;
+import gtna.util.parameter.IntParameter;
+import gtna.util.parameter.Parameter;
 
 import java.util.Arrays;
 import java.util.HashMap;
-
-import com.mysql.jdbc.Util;
 
 /**
  * @author stefanie
@@ -61,14 +61,19 @@ import com.mysql.jdbc.Util;
 public class CCalculator extends Metric {
      private Distribution C;
      private Timer runtime;
+     private int nr;
      
 	
 	/**
 	 * @param key
 	 */
 	public CCalculator() {
-		super("C");
-		// TODO Auto-generated constructor stub
+		this(0);
+	}
+	
+	public CCalculator(int nr) {
+		super("C", new Parameter[]{new IntParameter("NR", nr)});
+		this.nr = nr;
 	}
 
 	/* (non-Javadoc)
@@ -77,7 +82,7 @@ public class CCalculator extends Metric {
 	@Override
 	public void computeData(Graph g, Network n, HashMap<String, Metric> m) {
 		runtime = new Timer();
-		DIdentifierSpace idSpace = (DIdentifierSpace) g.getProperty("ID_SPACE_0");
+		DIdentifierSpace idSpace = (DIdentifierSpace) g.getProperty("ID_SPACE_"+this.nr);
         Partition<Double>[] parts = idSpace.getPartitions();  
         double[] count = new double[1];
         double[] sorted = this.getSortedIDs(parts);
