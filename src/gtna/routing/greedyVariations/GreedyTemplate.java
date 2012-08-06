@@ -46,6 +46,7 @@ import gtna.id.DIdentifierSpace;
 import gtna.id.DPartition;
 import gtna.id.Identifier;
 import gtna.id.data.DataStorageList;
+import gtna.id.ring.RingIdentifier;
 import gtna.routing.Route;
 import gtna.routing.RouteImpl;
 import gtna.routing.RoutingAlgorithm;
@@ -187,8 +188,20 @@ public abstract class GreedyTemplate extends RoutingAlgorithm {
 		while (this.pD[start].contains(target)) {
 			target = (DIdentifier) this.idSpaceD.randomID(rand);
 		}
-		return this.routeD(new ArrayList<Integer>(), start, target, rand,
+		Route r = this.routeD(new ArrayList<Integer>(), start, target, rand,
 				graph.getNodes());
+		if (!r.isSuccessful()){
+			int[] h = r.getRoute();
+			String line = "Failure for " + ((RingIdentifier)target).getPosition()*graph.getNodes().length;
+			for (int i = 0; i < h.length; i++){
+				line = line + " " + h[i];
+			}
+			System.out.println(line);
+		} else {
+		//	System.out.println("success");
+		}
+		
+		return r;
 	}
 
 	/**
