@@ -92,8 +92,8 @@ public class DeviationLookaheadList extends ObfuscatedLookaheadList {
 	 * @param minEpsilon
 	 * @param maxEpsilon
 	 */
-	public DeviationLookaheadList(String key, double sigma, Deviation devi, boolean randomize) {
-		super(key, new Parameter[]{new DoubleParameter("SIGMA", sigma),
+	public DeviationLookaheadList(double sigma, Deviation devi, boolean randomize) {
+		super("DEVIATION_LOOKAHEAD_LIST", new Parameter[]{new DoubleParameter("SIGMA", sigma),
 				new StringParameter("DIST", devi.toString()),
 				new BooleanParameter("R", randomize)});
 		this.sigma = sigma; 
