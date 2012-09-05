@@ -145,7 +145,8 @@ public class LookaheadGBack extends RoutingAlgorithm {
 			}
 		}
 		if (minDist <= this.greedy){
-			this.route(route, minNode, target, rand, nodes, from);
+			from.put(minNode, current);
+			return this.route(route, minNode, target, rand, nodes, from);
 		}
 		} else {
 			BIIdentifierSpace idSpaceBI = (BIIdentifierSpace)this.idSpace;
@@ -163,9 +164,9 @@ public class LookaheadGBack extends RoutingAlgorithm {
 					minNode = out;
 				}
 			}
-			if (minDist.doubleValue() < this.greedy){
+			if (minDist.doubleValue() <= this.greedy){
 				from.put(minNode, current);
-				this.route(route, minNode, target, rand, nodes, from);
+				return this.route(route, minNode, target, rand, nodes, from);
 			}
 		}
 		

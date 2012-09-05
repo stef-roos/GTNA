@@ -87,6 +87,10 @@ public class LookaheadGreedy extends RoutingAlgorithm {
 	public LookaheadGreedy(ViaSelection viaSelection) {
 		this(Integer.MAX_VALUE,viaSelection,0);
 	}
+	
+	public LookaheadGreedy(ViaSelection viaSelection, double greedy) {
+		this(Integer.MAX_VALUE,viaSelection,greedy);
+	}
 
 	public LookaheadGreedy(int ttl, ViaSelection viaSelection, double greedy) {
 		super("LOOKAHEAD_GREEDY", new Parameter[] { new IntParameter("TTL", ttl), 
@@ -118,6 +122,8 @@ public class LookaheadGreedy extends RoutingAlgorithm {
 			Identifier target, Random rand, Node[] nodes, HashSet<Integer> seen) {
 		route.add(current);
 		seen.add(current);
+		//System.out.println("Current " + current + " id: " + this.idSpace.getPartitions()[current].toString()
+			//	+ "searching for " + target.toString() + " contains " + );
 		if (this.idSpace.getPartitions()[current].contains(target)) {
 			return new RouteImpl(route, true);
 		}
@@ -143,8 +149,11 @@ public class LookaheadGreedy extends RoutingAlgorithm {
 				minNode = out;
 			}
 		}
+		//if (minDist < 0.001)
+		 //System.out.println(minDist);
 		if (minDist <= this.greedy){
-			this.route(route, minNode, target, rand, nodes, seen);
+			//System.out.println("Got here " + minNode);
+			return this.route(route, minNode, target, rand, nodes, seen);
 		}
 		} else {
 			BIIdentifierSpace idSpaceBI = (BIIdentifierSpace)this.idSpace;
@@ -161,12 +170,13 @@ public class LookaheadGreedy extends RoutingAlgorithm {
 					minNode = out;
 				}
 			}
-			if (minDist.doubleValue() < this.greedy){
-				this.route(route, minNode, target, rand, nodes, seen);
+			if (minDist.doubleValue() <= this.greedy){
+				return this.route(route, minNode, target, rand, nodes, seen);
 			}
 		}
 		
-		
+		//System.out.println("Got after neighbors lookin for " + target.toString() + " at " + 
+			//	this.idSpace.getPartitions()[current].toString());
 		LookaheadList list = this.lists.getList(current);
 
 		int via = -1;

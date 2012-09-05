@@ -48,11 +48,14 @@ import gtna.id.plane.PlanePartitionSimple;
 import gtna.id.ring.RingIdentifier;
 import gtna.id.ring.RingPartition;
 import gtna.id.ring.RingPartitionSimple;
+import gtna.networks.p2p.chord.ChordIdentifier;
+import gtna.networks.p2p.chord.ChordPartition;
 import gtna.util.parameter.BooleanParameter;
 import gtna.util.parameter.DoubleParameter;
 import gtna.util.parameter.Parameter;
 import gtna.util.parameter.StringParameter;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Random;
@@ -103,23 +106,20 @@ public class DeviationLookaheadList extends ObfuscatedLookaheadList {
 	
 	protected Partition obfuscatePartition(Partition partition, Random rand) {
 		if (this.deviation == Deviation.UNIFORM){
-			return obfuscatePartition(partition,rand);
-		}
-		if (this.deviation == Deviation.NORMAL){
 			if (partition instanceof RingPartitionSimple) {
 				RingPartitionSimple p = (RingPartitionSimple) partition;
 				double sign = rand.nextBoolean() ? 1.0 : -1.0;
-				double epsilon = minEpsilon + rand.nextGaussian() * this.sigma;
+				double epsilon =  rand.nextDouble() * this.sigma;
 				double position = p.getId().getPosition() + sign * epsilon;
 				return new RingPartitionSimple(new RingIdentifier(position, p
 						.getId().getIdSpace()));
 			} else if (partition instanceof RingPartition) {
 				RingPartition p = (RingPartition) partition;
 				double sign1 = rand.nextBoolean() ? 1.0 : -1.0;
-				double epsilon1 = minEpsilon + rand.nextGaussian() * this.sigma;
+				double epsilon1 = rand.nextDouble() * this.sigma;
 				double position1 = p.getStart().getPosition() + sign1 * epsilon1;
 				double sign2 = rand.nextBoolean() ? 1.0 : -1.0;
-				double epsilon2 = minEpsilon + rand.nextGaussian() * this.sigma;
+				double epsilon2 = rand.nextDouble() * this.sigma;
 				double position2 = p.getEnd().getPosition() + sign2 * epsilon2;
 				return new RingPartition(new RingIdentifier(position1, p.getStart()
 						.getIdSpace()), new RingIdentifier(position2, p.getEnd()
@@ -127,11 +127,43 @@ public class DeviationLookaheadList extends ObfuscatedLookaheadList {
 			} else if (partition instanceof PlanePartitionSimple) {
 				PlanePartitionSimple p = (PlanePartitionSimple) partition;
 				double sign1 = rand.nextBoolean() ? 1.0 : -1.0;
-				double epsilon1 = minEpsilon + rand.nextGaussian() * this.sigma;
+				double epsilon1 = rand.nextDouble() * this.sigma;
 				double position1 = p.getId().getX() + sign1 * epsilon1;
 				double sign2 = rand.nextBoolean() ? 1.0 : -1.0;
-				double epsilon2 = minEpsilon + rand.nextGaussian() * this.sigma;
+				double epsilon2 =  rand.nextDouble() * this.sigma;
 				double position2 = p.getId().getY() + sign2 * epsilon2;
+				return new PlanePartitionSimple(new PlaneIdentifier(position1,
+						position2, p.getId().getIdSpace()));
+			} else if (partition instanceof ChordPartition) {
+				super.obfuscatePartition(partition, rand);
+			} else {
+				throw new RuntimeException(
+						"Cannot create obfuscated partition for "
+								+ partition.getClass());
+			}
+		}
+		if (this.deviation == Deviation.NORMAL){
+			if (partition instanceof RingPartitionSimple) {
+				RingPartitionSimple p = (RingPartitionSimple) partition;
+				double epsilon = rand.nextGaussian() * this.sigma;
+				double position = p.getId().getPosition() +  epsilon;
+				return new RingPartitionSimple(new RingIdentifier(position, p
+						.getId().getIdSpace()));
+			} else if (partition instanceof RingPartition) {
+				RingPartition p = (RingPartition) partition;
+				double epsilon1 = rand.nextGaussian() * this.sigma;
+				double position1 = p.getStart().getPosition() + epsilon1;
+				double epsilon2 = rand.nextGaussian() * this.sigma;
+				double position2 = p.getEnd().getPosition() + epsilon2;
+				return new RingPartition(new RingIdentifier(position1, p.getStart()
+						.getIdSpace()), new RingIdentifier(position2, p.getEnd()
+						.getIdSpace()));
+			} else if (partition instanceof PlanePartitionSimple) {
+				PlanePartitionSimple p = (PlanePartitionSimple) partition;
+				double epsilon1 =  rand.nextGaussian() * this.sigma;
+				double position1 = p.getId().getX() + epsilon1;
+				double epsilon2 = rand.nextGaussian() * this.sigma;
+				double position2 = p.getId().getY() +  epsilon2;
 				return new PlanePartitionSimple(new PlaneIdentifier(position1,
 						position2, p.getId().getIdSpace()));
 			} else {

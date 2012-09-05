@@ -148,7 +148,8 @@ public class LookaheadGNB extends RoutingAlgorithm {
 			marked.add(current);
 		}
 		if (minDist <= this.greedy){
-			this.route(route, minNode, target, rand, nodes, from, marked);
+			from.put(minNode, current);
+			return this.route(route, minNode, target, rand, nodes, from, marked);
 		}
 		} else {
 			BIIdentifierSpace idSpaceBI = (BIIdentifierSpace)this.idSpace;
@@ -168,9 +169,9 @@ public class LookaheadGNB extends RoutingAlgorithm {
 			if (minDist.compareTo(currentDist) == 1){
 				marked.add(current);
 			}
-			if (minDist.doubleValue() < this.greedy){
+			if (minDist.doubleValue() <= this.greedy){
 				from.put(minNode, current);
-				this.route(route, minNode, target, rand, nodes, from, marked);
+				return this.route(route, minNode, target, rand, nodes, from, marked);
 			}
 		}
 		
