@@ -61,7 +61,6 @@ import gtna.util.parameter.StringParameter;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Random;
 
 /**
@@ -89,6 +88,10 @@ public class LookaheadGBack extends RoutingAlgorithm {
 	public LookaheadGBack(ViaSelection viaSelection) {
 		this(Integer.MAX_VALUE,viaSelection,0);
 	}
+	
+	public LookaheadGBack(ViaSelection viaSelection, double greedy) {
+		this(Integer.MAX_VALUE,viaSelection,greedy);
+	}
 
 	public LookaheadGBack(int ttl, ViaSelection viaSelection, double greedy) {
 		super("LGB", new Parameter[] { new IntParameter("TTL", ttl), 
@@ -105,8 +108,10 @@ public class LookaheadGBack extends RoutingAlgorithm {
 		while (this.p[start].contains(target)) {
 			target = this.idSpace.randomID(rand);
 		}
+		HashMap<Integer, Integer> from = new HashMap<Integer, Integer>();
+		from.put(start, -1);
 		return this.route(new ArrayList<Integer>(), start, target, rand,
-				graph.getNodes(), new HashMap<Integer, Integer>());
+				graph.getNodes(), from);
 	}
 
 	@Override
@@ -118,8 +123,10 @@ public class LookaheadGBack extends RoutingAlgorithm {
 
 	private Route route(ArrayList<Integer> route, int current,
 			Identifier target, Random rand, Node[] nodes, HashMap<Integer,Integer> from) {
+		//System.out.println("Current: " + current + " ID:" + this.idSpace.getPartitions()[current].toString());
 		route.add(current);
 		if (this.idSpace.getPartitions()[current].contains(target)) {
+			//System.out.println("Found");
 			return new RouteImpl(route, true);
 		}
 		if (this.dsl != null
@@ -127,6 +134,7 @@ public class LookaheadGBack extends RoutingAlgorithm {
 			return new RouteImpl(route, true);
 		}
 		if (route.size() > this.ttl) {
+			//System.out.println("Failed");
 			return new RouteImpl(route, false);
 		}
 		//greedy check
@@ -274,12 +282,10 @@ public class LookaheadGBack extends RoutingAlgorithm {
 		}
 
 		if (via == -1) {
-			Integer pre  = from.get(current);
-			if (pre == null){
+			via  = from.get(current);
+			if (via == -1){
 			  return new RouteImpl(route, false);
-			} else {
-				via = pre;
-			}
+			} 
 		} else {
 			from.put(via, current);
 		}

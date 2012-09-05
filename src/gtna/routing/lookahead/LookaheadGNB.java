@@ -88,6 +88,10 @@ public class LookaheadGNB extends RoutingAlgorithm {
 	public LookaheadGNB(ViaSelection viaSelection) {
 		this(Integer.MAX_VALUE,viaSelection,0);
 	}
+	
+	public LookaheadGNB(ViaSelection viaSelection, double greedy) {
+		this(Integer.MAX_VALUE,viaSelection,greedy);
+	}
 
 	public LookaheadGNB(int ttl, ViaSelection viaSelection, double greedy) {
 		super("LGNB", new Parameter[] { new IntParameter("TTL", ttl), 
@@ -104,8 +108,10 @@ public class LookaheadGNB extends RoutingAlgorithm {
 		while (this.p[start].contains(target)) {
 			target = this.idSpace.randomID(rand);
 		}
+		HashMap<Integer, Integer> from = new HashMap<Integer, Integer>();
+		from.put(start, -1);
 		return this.route(new ArrayList<Integer>(), start, target, rand,
-				graph.getNodes(), new HashMap<Integer, Integer>(), new HashSet<Integer>());
+				graph.getNodes(), from, new HashSet<Integer>());
 	}
 
 	@Override
@@ -118,6 +124,9 @@ public class LookaheadGNB extends RoutingAlgorithm {
 	private Route route(ArrayList<Integer> route, int current,
 			Identifier target, Random rand, Node[] nodes, HashMap<Integer,Integer> from,
 			HashSet<Integer> marked) {
+		//System.out.println("Current " + current + " id: " + this.idSpace.getPartitions()[current].toString()
+			//+ "searching for " + target.toString());
+		//System.out.println("Marked: " + marked.contains(current));
 		route.add(current);
 		if (this.idSpace.getPartitions()[current].contains(target)) {
 			return new RouteImpl(route, true);
@@ -144,9 +153,11 @@ public class LookaheadGNB extends RoutingAlgorithm {
 				minNode = out;
 			}
 		}
-		if (minDist >= currentDist){
-			marked.add(current);
-		}
+		//System.out.println("MinDist " + minDist + " currentDist " + currentDist);
+//		if (minDist >= currentDist){
+//			//System.out.println("Marking " + current);
+//			marked.add(current);
+//		}
 		if (minDist <= this.greedy){
 			from.put(minNode, current);
 			return this.route(route, minNode, target, rand, nodes, from, marked);
@@ -227,6 +238,14 @@ public class LookaheadGNB extends RoutingAlgorithm {
 					}
 				}
 			}
+			double dist = (Double) this.idSpace.getMaxDistance();
+			if (via != -1){
+				dist = ((DPartition) this.p[via])
+						.distance(target);
+			}
+			if (currentDist <= dist){
+				marked.add(current);
+			}
 		} else if (list.getList()[0].getPartition() instanceof BIPartition) {
 			BigInteger currentDist = (BigInteger) this.p[current]
 					.distance(target);
@@ -272,18 +291,22 @@ public class LookaheadGNB extends RoutingAlgorithm {
 					}
 				}
 			}
+			if (minDist.compareTo(currentDist) == 1){
+				marked.add(current);
+			}
 		} else {
 			return null;
 		}
 
 		if (via == -1) {
-			Integer pre  = from.get(current);
-			if (pre == null){
+			marked.add(current);
+			via  = from.get(current);
+			//System.out.println("Back to predeccessor");
+			if (via == -1){
 			  return new RouteImpl(route, false);
-			} else {
-				via = pre;
-			}
+			} 
 		} else {
+			if (!from.containsKey(via))
 			from.put(via, current);
 		}
 		return this.route(route, via, target, rand, nodes, from, marked);

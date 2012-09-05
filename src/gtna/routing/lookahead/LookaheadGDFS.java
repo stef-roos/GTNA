@@ -89,6 +89,10 @@ public class LookaheadGDFS extends RoutingAlgorithm {
 	public LookaheadGDFS(ViaSelection viaSelection) {
 		this(Integer.MAX_VALUE,viaSelection,0);
 	}
+	
+	public LookaheadGDFS(ViaSelection viaSelection, double greedy) {
+		this(Integer.MAX_VALUE,viaSelection,greedy);
+	}
 
 	public LookaheadGDFS(int ttl, ViaSelection viaSelection, double greedy) {
 		super("LGDFS", new Parameter[] { new IntParameter("TTL", ttl), 
@@ -105,8 +109,10 @@ public class LookaheadGDFS extends RoutingAlgorithm {
 		while (this.p[start].contains(target)) {
 			target = this.idSpace.randomID(rand);
 		}
+		HashMap<Integer, Integer> from = new HashMap<Integer, Integer>();
+		from.put(start, -1);
 		return this.route(new ArrayList<Integer>(), start, target, rand,
-				graph.getNodes(), new HashMap<Integer, Integer>());
+				graph.getNodes(), from);
 	}
 
 	@Override
@@ -264,12 +270,10 @@ public class LookaheadGDFS extends RoutingAlgorithm {
 		}
 
 		if (via == -1) {
-			Integer pre  = from.get(current);
-			if (pre == null){
+			via  = from.get(current);
+			if (via == -1){
 			  return new RouteImpl(route, false);
-			} else {
-				via = pre;
-			}
+			} 
 		} else {
 			from.put(via, current);
 		}
