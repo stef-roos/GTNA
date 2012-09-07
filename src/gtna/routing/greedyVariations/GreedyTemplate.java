@@ -61,16 +61,17 @@ import java.util.Random;
  * 
  * @author stefanie
  * 
+ * 
  */
 public abstract class GreedyTemplate extends RoutingAlgorithm {
 
-	DIdentifierSpace idSpaceD;
+	protected DIdentifierSpace idSpaceD;
 
-	DPartition[] pD;
+	protected DPartition[] pD;
 
-	BIIdentifierSpace idSpaceBI;
+	protected BIIdentifierSpace idSpaceBI;
 
-	BIPartition[] pBI;
+	protected BIPartition[] pBI;
 
 	private DataStorageList dsl;
 
