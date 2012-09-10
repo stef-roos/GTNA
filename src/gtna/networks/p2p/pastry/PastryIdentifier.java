@@ -39,6 +39,7 @@ import java.math.BigInteger;
 import java.util.Random;
 
 import gtna.id.BIIdentifier;
+import gtna.id.DIdentifier;
 import gtna.id.Identifier;
 
 /**
@@ -67,18 +68,7 @@ public class PastryIdentifier implements BIIdentifier, Comparable<PastryIdentifi
 
 	public BigInteger distance(Identifier<BigInteger> id) {
 		BigInteger dest = ((PastryIdentifier) id).getId();
-		BigInteger dist;
-		if (this.id.compareTo(dest) == -1) {
-			dist = dest.subtract(this.id);
-		} else {
-			dist = this.idSpace.getModulus().subtract(this.id).add(dest);
-		}
-		if (dist.compareTo(this.idSpace.getModulus().divide(BigInteger.ONE.add(BigInteger.ONE)))
-				== 1){
-			return this.idSpace.getModulus().subtract(dist);
-		} else {
-			return dist;
-		}
+		return dest.xor(this.id);
 	}
 
 	@Override
@@ -142,5 +132,7 @@ public class PastryIdentifier implements BIIdentifier, Comparable<PastryIdentifi
          res[1] = diff.intValue();
 		 return res;
 	 }
+
+	
 
 }
