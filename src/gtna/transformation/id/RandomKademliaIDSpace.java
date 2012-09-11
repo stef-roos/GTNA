@@ -21,12 +21,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------
- * RandomPastryIDSpace.java
+ * RandomKademliaIDSpace.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
  * and Contributors 
  *
- * Original Author: stefanie;
+ * Original Author: stef;
  * Contributors:    -;
  *
  * Changes since 2011-05-17
@@ -36,9 +36,9 @@
 package gtna.transformation.id;
 
 import gtna.graph.Graph;
-import gtna.networks.p2p.pastry.PastryIdentifier;
-import gtna.networks.p2p.pastry.PastryIdentifierSpace;
-import gtna.networks.p2p.pastry.PastryPartition;
+import gtna.networks.p2p.kademlia.KademliaIdentifier;
+import gtna.networks.p2p.kademlia.KademliaIdentifierSpace;
+import gtna.networks.p2p.kademlia.KademliaPartition;
 import gtna.transformation.Transformation;
 import gtna.util.parameter.BooleanParameter;
 import gtna.util.parameter.IntParameter;
@@ -50,27 +50,24 @@ import java.util.HashSet;
 import java.util.Random;
 
 /**
- * @author stefanie
+ * @author stef
  *
  */
-public class RandomPastryIDSpace extends Transformation {
+public class RandomKademliaIDSpace extends Transformation {
 
 	private int bits;
 
 	private boolean uniform;
 	
-	private int L;
-	
-	private int prefix;
+	private int k;
 
-	public RandomPastryIDSpace(int bits, boolean uniform, int L, int prefix) {
-		super("RANDOM_PASTRY_ID_SPACE", new Parameter[] {
-				new IntParameter("BITS", bits),
+	public RandomKademliaIDSpace(int bits, boolean uniform, int k) {
+		super("RANDOM_KADEMLIA_ID_SPACE", new Parameter[] {
+				new IntParameter("BITS", bits), new IntParameter("BUCKET_SIZE", k),
 				new BooleanParameter("ID_SELECTION", uniform) });
 		this.bits = bits;
 		this.uniform = uniform;
-		this.L = L;
-		this.prefix = prefix;
+		this.k = k;
 	}
 
 	
@@ -79,22 +76,22 @@ public class RandomPastryIDSpace extends Transformation {
 	public Graph transform(Graph graph) {
 		Random rand = new Random();
 		
-			PastryIdentifierSpace idSpace = new PastryIdentifierSpace(this.bits,this.L,this.prefix);
-			PastryIdentifier[] ids = new PastryIdentifier[graph.getNodes().length];
+			KademliaIdentifierSpace idSpace = new KademliaIdentifierSpace(this.bits,this.k);
+			KademliaIdentifier[] ids = new KademliaIdentifier[graph.getNodes().length];
 			if (this.uniform) {
 				BigInteger stepSize = idSpace.getModulus().divide(
 						new BigInteger("" + graph.getNodes().length));
 				for (int i = 0; i < ids.length; i++) {
-					ids[i] = new PastryIdentifier(idSpace,
+					ids[i] = new KademliaIdentifier(idSpace,
 							stepSize.multiply(new BigInteger("" + i)));
 				}
 			} else {
 				HashSet<String> idSet = new HashSet<String>();
 				for (int i = 0; i < ids.length; i++) {
-					PastryIdentifier id = (PastryIdentifier) idSpace
+					KademliaIdentifier id = (KademliaIdentifier) idSpace
 							.randomID(rand);
 					while (idSet.contains(id.toString())) {
-						id = (PastryIdentifier) idSpace.randomID(rand);
+						id = (KademliaIdentifier) idSpace.randomID(rand);
 					}
 					ids[i] = id;
 					idSet.add(id.toString());
@@ -102,10 +99,10 @@ public class RandomPastryIDSpace extends Transformation {
 			}
 			Arrays.sort(ids);
 
-			PastryPartition[] partitions = new PastryPartition[ids.length];
-			partitions[0] = new PastryPartition(ids[ids.length - 1], ids[0]);
+			KademliaPartition[] partitions = new KademliaPartition[ids.length];
+			partitions[0] = new KademliaPartition(ids[ids.length - 1], ids[0]);
 			for (int i = 1; i < partitions.length; i++) {
-				partitions[i] = new PastryPartition(ids[i - 1], ids[i]);
+				partitions[i] = new KademliaPartition(ids[i - 1], ids[i]);
 			}
 
 			// Util.randomize(partitions, rand);

@@ -37,6 +37,7 @@ package gtna.networks.p2p.kademlia;
 
 import gtna.id.BIIdentifier;
 import gtna.id.Identifier;
+import gtna.networks.p2p.pastry.PastryIdentifier;
 
 import java.math.BigInteger;
 import java.util.Random;
@@ -67,18 +68,7 @@ public class KademliaIdentifier implements BIIdentifier, Comparable<KademliaIden
 
 	public BigInteger distance(Identifier<BigInteger> id) {
 		BigInteger dest = ((KademliaIdentifier) id).getId();
-		BigInteger dist;
-		if (this.id.compareTo(dest) == -1) {
-			dist = dest.subtract(this.id);
-		} else {
-			dist = this.idSpace.getModulus().subtract(this.id).add(dest);
-		}
-		if (dist.compareTo(this.idSpace.getModulus().divide(BigInteger.ONE.add(BigInteger.ONE)))
-				== 1){
-			return this.idSpace.getModulus().subtract(dist);
-		} else {
-			return dist;
-		}
+		return dest.xor(this.id);
 	}
 
 	@Override
@@ -125,22 +115,6 @@ public class KademliaIdentifier implements BIIdentifier, Comparable<KademliaIden
 		return this.id.toString();
 	}
 	
-	 public int[] getPrefixLength(int b, int M, BigInteger other){
-		 int[] res = new int[2];
-		 BigInteger c = BigInteger.ZERO.add(this.id);
-		 BigInteger a = BigInteger.ZERO.add(other);
-		 BigInteger diff = c.subtract(a).abs();
-		 int incommon = M/b -1;
-		 BigInteger prefix = BigInteger.ONE.add(BigInteger.ONE).pow(b);
-		 while (diff.compareTo(prefix) == 1){
-			 a = a.shiftRight(b);
-			 c = c.shiftRight(b);
-			 diff = a.subtract(c).abs();
-			 incommon--;
-		 }
-		 res[0] = incommon;
-         res[1] = diff.intValue();
-		 return res;
-	 }
+	
 
 }

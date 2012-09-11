@@ -35,8 +35,22 @@
  */
 package gtna.networks.p2p.kademlia;
 
+import java.math.BigInteger;
+import java.util.HashSet;
+import java.util.Random;
+
+import gtna.graph.Edges;
 import gtna.graph.Graph;
+import gtna.graph.Node;
+import gtna.graph.sorting.NodeSorter;
+import gtna.graph.sorting.RandomNodeSorter;
 import gtna.networks.Network;
+import gtna.networks.p2p.chord.Chord.IDSelection;
+import gtna.transformation.Transformation;
+import gtna.transformation.id.RandomKademliaIDSpace;
+import gtna.util.parameter.IntParameter;
+import gtna.util.parameter.Parameter;
+import gtna.util.parameter.StringParameter;
 
 /**
  * @author stefanie
@@ -44,13 +58,62 @@ import gtna.networks.Network;
  */
 public class Kademlia extends Network {
 
+	private int k;
+	private int bits;
+	private IDSelection selection;
+	/**
+	 * @param key
+	 * @param nodes
+	 * @param parameters
+	 * @param transformations
+	 */
+	public Kademlia(int nodes, int bits, int k, IDSelection selection,
+			Transformation[] transformations) {
+		super("KADEMLIA", nodes, new Parameter[] { new IntParameter("BITS", bits),
+				new IntParameter("BUCKET_SIZE", k), 
+		new StringParameter("ID_SELECTION", selection.toString())}, transformations);
+		this.bits = bits;
+		this.k = k;
+	}
+
 	/* (non-Javadoc)
 	 * @see gtna.networks.Network#generate()
 	 */
 	@Override
 	public Graph generate() {
-		// TODO Auto-generated method stub
-		return null;
+		Graph graph = new Graph(this.getDescription());
+		Node[] nodes = Node.init(this.getNodes(), graph);
+		graph.setNodes(nodes);
+		RandomKademliaIDSpace t = new RandomKademliaIDSpace(this.bits,
+				this.selection == IDSelection.UNIFORM, this.k);
+		graph = t.transform(graph);
+
+		KademliaIdentifierSpace idSpace = (KademliaIdentifierSpace) graph
+				.getProperty("ID_SPACE_0");
+		KademliaPartition[] partitions = (KademliaPartition[]) idSpace
+				.getPartitions();
+
+		Edges edges = new Edges(nodes, nodes.length * this.bits*k);
+		Random rand = new Random();
+		NodeSorter randomize = new RandomNodeSorter();
+		int val;
+		
+		for (Node node : nodes) {
+			int[] counts = new int[this.bits+1];
+			KademliaIdentifier id = partitions[node.getIndex()].getSucc();
+			Node[] randNodes = randomize.sort(graph, rand);
+            for (int j = 0; j < randNodes.length; j++){
+            	val = id.distance(partitions[randNodes[j].getIndex()].getSucc()).bitLength();
+            	if (counts[val] < this.k){
+            		counts[val]++;
+            		edges.add(node.getIndex(), randNodes[j].getIndex());
+            	}
+            }
+		}
+		edges.fill();
+
+		graph.getTimer().end();
+		return graph;
 	}
 
 }
