@@ -82,7 +82,7 @@ public class Pastry extends Network {
 		Node[] nodes = Node.init(this.getNodes(), graph);
 		graph.setNodes(nodes);
 		RandomPastryIDSpace t = new RandomPastryIDSpace(this.bits,
-				this.selection == IDSelection.UNIFORM);
+				this.selection == IDSelection.UNIFORM, this.l,this.prefix);
 		graph = t.transform(graph);
 
 		PastryIdentifierSpace idSpace = (PastryIdentifierSpace) graph
@@ -123,6 +123,22 @@ public class Pastry extends Network {
 		graph.getTimer().end();
 		return graph;
 
+	}
+
+	public int getBits() {
+		return this.bits;
+	}
+
+	public int getPrefix() {
+		return this.prefix;
+	}
+
+	public int getL() {
+		return this.l;
+	}
+
+	public IDSelection getSelection() {
+		return this.selection;
 	}
 	
 	

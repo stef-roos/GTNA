@@ -55,6 +55,8 @@ import gtna.util.Config;
 public class PastryIdentifierSpace implements BIIdentifierSpace {
 
 	private int bits;
+	private int L;
+	private int prefix;
 
 	private BigInteger modulus;
 
@@ -65,8 +67,10 @@ public class PastryIdentifierSpace implements BIIdentifierSpace {
 		this.modulus = BigInteger.ZERO;
 	}
 
-	public PastryIdentifierSpace(int bits) {
+	public PastryIdentifierSpace(int bits, int L, int prefix) {
 		this.bits = bits;
+		this.L = L;
+		this.prefix = prefix;
 		this.modulus = BigInteger.ONE.add(BigInteger.ONE).pow(this.bits);
 	}
 
@@ -87,7 +91,7 @@ public class PastryIdentifierSpace implements BIIdentifierSpace {
 
 	@Override
 	public BigInteger getMaxDistance() {
-		return this.modulus;
+		return this.modulus.divide(BigInteger.ONE.add(BigInteger.ONE));
 	}
 
 	@Override
@@ -193,9 +197,17 @@ public class PastryIdentifierSpace implements BIIdentifierSpace {
 	}
 
 	public PastryIdentifierSpace clone() {
-		PastryIdentifierSpace result = new PastryIdentifierSpace(this.bits);
+		PastryIdentifierSpace result = new PastryIdentifierSpace(this.bits, this.L, this.prefix);
 		result.setPartitions(this.partitions.clone());
 		return result;
+	}
+
+	public int getL() {
+		return this.L;
+	}
+
+	public int getPrefix() {
+		return this.prefix;
 	}
 
 }
