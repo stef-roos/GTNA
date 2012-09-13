@@ -116,8 +116,11 @@ public class PastryRouting extends RoutingAlgorithm {
 	private Route routeBI(ArrayList<Integer> route, int current,
 			BIIdentifier target, Random rand, Node[] nodes) {
 		route.add(current);
-		//System.out.println("At " + this.pBI[current].getSucc().getId() + " " + ((PastryIdentifier)target).getId() +
-			//	" distance " + this.pBI[current].distance(target).bitLength());
+//		int[] diffP = this.pBI[current].getSucc().getPrefixLength(this.idSpaceBI.getPrefix(), this.idSpaceBI.getBits(),
+//				((PastryIdentifier)target).getId());
+//		System.out.println("At " + this.pBI[current].getSucc().getId() + " " + ((PastryIdentifier)target).getId() +
+//				" distance " + this.pBI[current].distance(target).bitLength() + " diff = (" + diffP[0] + "," + diffP[1] + ")"
+//				);
 		if (this.idSpaceBI.getPartitions()[current].contains(target)) {
 			//System.out.println("Found");
 			return new RouteImpl(route, true);
