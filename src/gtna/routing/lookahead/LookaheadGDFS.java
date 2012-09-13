@@ -53,6 +53,7 @@ import gtna.routing.Route;
 import gtna.routing.RouteImpl;
 import gtna.routing.RoutingAlgorithm;
 import gtna.routing.lookahead.Lookahead.ViaSelection;
+import gtna.util.parameter.BooleanParameter;
 import gtna.util.parameter.DoubleParameter;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
@@ -83,26 +84,34 @@ public class LookaheadGDFS extends RoutingAlgorithm {
 	private DataStorageList dsl;
 	
 	private double greedy;
+	
+	private boolean includeNeighbors;
 
 	
 
 	public LookaheadGDFS(ViaSelection viaSelection) {
-		this(Integer.MAX_VALUE,viaSelection,0);
+		this(Integer.MAX_VALUE,viaSelection,0, false);
 	}
 	
 	public LookaheadGDFS(ViaSelection viaSelection, double greedy) {
-		this(Integer.MAX_VALUE,viaSelection,greedy);
+		this(Integer.MAX_VALUE,viaSelection,greedy, false);
+	}
+	
+	public LookaheadGDFS(int ttl, ViaSelection viaSelection, double greedy) {
+		this(ttl,viaSelection,greedy, false);
 	}
 
-	public LookaheadGDFS(int ttl, ViaSelection viaSelection, double greedy) {
+	public LookaheadGDFS(int ttl, ViaSelection viaSelection, double greedy, boolean include) {
 		super("LGDFS", new Parameter[] { new IntParameter("TTL", ttl), 
 				new StringParameter("VIA", viaSelection.toString()),
-				new DoubleParameter("GREEDY", greedy)});
+				new DoubleParameter("GREEDY", greedy), new BooleanParameter("INCLUDE_NEIGHBORS", include)});
 		this.ttl = ttl;
 		this.viaSelection = viaSelection;
 		this.greedy = greedy;
+		this.includeNeighbors = include;
 	}
 
+	
 	@Override
 	public Route routeToRandomTarget(Graph graph, int start, Random rand) {
 		Identifier target = this.idSpace.randomID(rand);
