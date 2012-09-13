@@ -108,7 +108,7 @@ public class Pastry extends Network {
 			for (int j = 0; j < randNodes.length; j++){
 				if (node.getIndex() != randNodes[j].getIndex()){
 					BigInteger other = partitions[randNodes[j].getIndex()].getSucc().getId();
-					diff = p.getSucc().getPrefixLength(this.prefix, this.bits, other);
+					diff = p.getSucc().getPrefixLength(other);
 					val = diff[0]*pre + diff[1];
 					if (!neighbors.contains(val)){
 						edges.add(node.getIndex(), randNodes[j].getIndex());

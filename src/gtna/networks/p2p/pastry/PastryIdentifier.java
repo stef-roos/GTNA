@@ -35,12 +35,11 @@
  */
 package gtna.networks.p2p.pastry;
 
+import gtna.id.BIIdentifier;
+import gtna.id.Identifier;
+
 import java.math.BigInteger;
 import java.util.Random;
-
-import gtna.id.BIIdentifier;
-import gtna.id.DIdentifier;
-import gtna.id.Identifier;
 
 /**
  * @author stefanie
@@ -67,8 +66,16 @@ public class PastryIdentifier implements BIIdentifier, Comparable<PastryIdentifi
 	}
 
 	public BigInteger distance(Identifier<BigInteger> id) {
-		BigInteger dest = ((PastryIdentifier) id).getId();
-		return dest.xor(this.id);
+		//int b = this.idSpace.getPrefix();
+		 BigInteger diff = this.id.xor(((PastryIdentifier)id).getId());
+		 return diff;
+//		 BigInteger c = BigInteger.ZERO;
+//		 BigInteger prefix = BigInteger.ONE.add(BigInteger.ONE).pow(b);
+//		 while (diff.compareTo(prefix) == 1){
+//			 c.subtract(BigInteger.ONE);
+//			 diff = diff.shiftRight(b);
+//		 }
+		//return c;
 	}
 
 	@Override
@@ -115,22 +122,31 @@ public class PastryIdentifier implements BIIdentifier, Comparable<PastryIdentifi
 		return this.id.toString();
 	}
 	
-	 public int[] getPrefixLength(int b, int M, BigInteger other){
-		 int[] res = new int[2];
-		 BigInteger c = BigInteger.ZERO.add(this.id);
-		 BigInteger a = BigInteger.ZERO.add(other);
-		 BigInteger diff = c.subtract(a).abs();
-		 int incommon = M/b -1;
+	 public int[] getPrefixLength(BigInteger other){
+		 int b = this.idSpace.getPrefix();
+		 BigInteger diff = this.id.xor(other);
+		 int c = 0;
 		 BigInteger prefix = BigInteger.ONE.add(BigInteger.ONE).pow(b);
 		 while (diff.compareTo(prefix) == 1){
-			 a = a.shiftRight(b);
-			 c = c.shiftRight(b);
-			 diff = a.subtract(c).abs();
-			 incommon--;
+			 c++;
+			 diff = diff.shiftRight(b);
 		 }
-		 res[0] = incommon;
-         res[1] = diff.intValue();
-		 return res;
+		 return new int[]{c,diff.intValue()};
+//		 int[] res = new int[2];
+//		 BigInteger c = BigInteger.ZERO.add(this.id);
+//		 BigInteger a = BigInteger.ZERO.add(other);
+//		 BigInteger diff = c.subtract(a).abs();
+//		 int incommon = M/b -1;
+//		 BigInteger prefix = BigInteger.ONE.add(BigInteger.ONE).pow(b);
+//		 while (diff.compareTo(prefix) == 1){
+//			 a = a.shiftRight(b);
+//			 c = c.shiftRight(b);
+//			 diff = a.subtract(c).abs();
+//			 incommon--;
+//		 }
+//		 res[0] = incommon;
+//         res[1] = diff.intValue();
+//		 return res;
 	 }
 
 	
