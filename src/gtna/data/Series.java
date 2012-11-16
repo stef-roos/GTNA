@@ -213,14 +213,13 @@ public class Series {
 				((ReadableFolder) s.getNetwork()).incIndex();
 			}
 		}
-
 		for (int run = startRun; run <= endRun; run++) {
 			if (!Series.generateRun(s, run)) {
+				
 				System.err.println("error in run " + run);
 				return null;
 			}
 		}
-
 		if (startRun != 0) {
 			System.out.println("\n");
 			return s;

@@ -63,11 +63,13 @@ public class Example {
 		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "true");
 
 		Metric[] metrics = new Metric[] { new DegreeDistribution(),
-				new ShortestPaths() };
+				 };
 		int times = 1;
-
-		er(metrics, times);
-		as(metrics, times);
+		
+		Network er1 = new ReadableFile("SPI", "SPI","../graphs/spi.txt",null);
+		Series.generate(er1, metrics, times);
+//		er(metrics, times);
+//		as(metrics, times);
 	}
 
 	public static void er(Metric[] metrics, int times) {

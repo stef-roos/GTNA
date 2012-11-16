@@ -82,6 +82,7 @@ public class ReadableList extends Network {
 	}
 
 	public Graph generate() {
+		
 		this.index = (this.index + 1) % this.files.length;
 		Graph graph = new GtnaGraphReader()
 				.readWithProperties(this.files[this.index]);
