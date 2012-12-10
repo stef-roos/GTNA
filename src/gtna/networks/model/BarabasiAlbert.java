@@ -39,6 +39,7 @@ import gtna.graph.Edges;
 import gtna.graph.Graph;
 import gtna.graph.Node;
 import gtna.networks.Network;
+import gtna.networks.canonical.Complete;
 import gtna.transformation.Transformation;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
@@ -81,7 +82,7 @@ public class BarabasiAlbert extends Network {
 				this.EDGES_PER_NODE + 5);
 		int initEdges = initNodes * this.EDGES_PER_NODE;
 		int ed = 0;
-		Graph temp = new ErdosRenyi(initNodes, this.EDGES_PER_NODE, true, null)
+		Graph temp = new Complete(initNodes, null)
 				.generate();
 		Edges edges = new Edges(nodes, initEdges + (nodes.length - initNodes)
 				* this.EDGES_PER_NODE);

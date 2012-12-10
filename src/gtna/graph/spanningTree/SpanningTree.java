@@ -44,6 +44,7 @@ import gtna.util.Config;
 import gtna.util.Util;
 
 import java.util.ArrayList;
+import java.util.Vector;
 
 /**
  * @author benni
@@ -206,6 +207,32 @@ public class SpanningTree implements GraphProperty {
 
 	public boolean isSrc(int node) {
 		return this.src == node;
+	}
+	
+	public int getTreeDistance(int s, int t){
+		if (s == t) return 0;
+		int dep1 = this.getDepth(s);
+		int dep2 = this.getDepth(t);
+		if (dep2 < dep1){
+			int h = s;
+			s = t;
+			t = h;
+			h = dep1;
+			dep1 = dep2;
+			dep2 = h;
+		}
+		int c = 0;
+		while (dep2 > dep1){
+			t = this.getParent(t);
+			dep2--;
+			c++;
+		}
+		while (s != t){
+			c = c + 2;
+			s = this.getParent(s);
+			t = this.getParent(t);
+		}
+		return c;
 	}
 
 }

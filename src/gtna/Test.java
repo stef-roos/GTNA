@@ -36,21 +36,13 @@
 package gtna;
 
 import gtna.data.Series;
-import gtna.graph.sorting.DegreeNodeSorter;
-import gtna.graph.sorting.NodeSorter.NodeSorterMode;
-import gtna.graph.sorting.RandomNodeSorter;
-import gtna.graph.sorting.SpectralSorter;
-import gtna.graph.sorting.SpectralSorter.Calculation;
-import gtna.graph.sorting.SpectralSorter.DegreeOne;
 import gtna.metrics.Metric;
-import gtna.metrics.fragmentation.Fragmentation.Resolution;
-import gtna.metrics.fragmentation.WeakFragmentation;
+import gtna.metrics.routing.RoutingSP;
 import gtna.networks.Network;
 import gtna.networks.model.BarabasiAlbert;
-import gtna.plot.Plotting;
+import gtna.routing.greedy.GreedyTree;
 import gtna.transformation.Transformation;
-import gtna.transformation.eigenvector.StoreFiedler;
-import gtna.transformation.partition.LargestWeaklyConnectedComponent;
+import gtna.transformation.embedding.prefix.PrefixEmbeddingSTVirtual;
 import gtna.util.Config;
 
 /**
@@ -60,20 +52,23 @@ import gtna.util.Config;
 public class Test {
 	
 	public static void main(String[] args) {
-		Config.overwrite("MAIN_DATA_FOLDER", "./data/test/");
-		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "true");
-		Network nw = new BarabasiAlbert(1000,2,new Transformation[]
-				{new LargestWeaklyConnectedComponent(),new StoreFiedler()});
-		Metric[] m = new Metric[]{new WeakFragmentation(new DegreeNodeSorter(NodeSorterMode.DESC), Resolution.PERCENT),
-				new WeakFragmentation(new SpectralSorter(NodeSorterMode.DESC,Calculation.SUM,DegreeOne.INCLUDE), Resolution.PERCENT),
-				new WeakFragmentation(new SpectralSorter(NodeSorterMode.DESC,Calculation.ABSOLUTE,DegreeOne.INCLUDE), Resolution.PERCENT),
-				new WeakFragmentation(new SpectralSorter(NodeSorterMode.DESC,Calculation.SUM,DegreeOne.INCLUDE_CAL), Resolution.PERCENT),
-				new WeakFragmentation(new SpectralSorter(NodeSorterMode.DESC,Calculation.ABSOLUTE,DegreeOne.INCLUDE_CAL), Resolution.PERCENT),
-				new WeakFragmentation(new SpectralSorter(NodeSorterMode.DESC,Calculation.SUM,DegreeOne.EXCLUDE), Resolution.PERCENT),
-				new WeakFragmentation(new SpectralSorter(NodeSorterMode.DESC,Calculation.ABSOLUTE,DegreeOne.EXCLUDE), Resolution.PERCENT),
-				new WeakFragmentation(new RandomNodeSorter(), Resolution.PERCENT)};
-		Series s = Series.generate(nw, m, 10);
-		Plotting.multi(s, m, "data/test/");
+		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
+		Network net = new BarabasiAlbert(Integer.parseInt(args[0]),Integer.parseInt(args[1]),new Transformation[]{new PrefixEmbeddingSTVirtual(-1,Integer.MAX_VALUE,160)});
+		Series.generate(net, new Metric[]{new RoutingSP(new GreedyTree(),true)}, Integer.parseInt(args[2]));
+//		Config.overwrite("MAIN_DATA_FOLDER", "./data/test/");
+//		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "true");
+//		Network nw = new BarabasiAlbert(1000,2,new Transformation[]
+//				{new LargestWeaklyConnectedComponent(),new StoreFiedler()});
+//		Metric[] m = new Metric[]{new WeakFragmentation(new DegreeNodeSorter(NodeSorterMode.DESC), Resolution.PERCENT),
+//				new WeakFragmentation(new SpectralSorter(NodeSorterMode.DESC,Calculation.SUM,DegreeOne.INCLUDE), Resolution.PERCENT),
+//				new WeakFragmentation(new SpectralSorter(NodeSorterMode.DESC,Calculation.ABSOLUTE,DegreeOne.INCLUDE), Resolution.PERCENT),
+//				new WeakFragmentation(new SpectralSorter(NodeSorterMode.DESC,Calculation.SUM,DegreeOne.INCLUDE_CAL), Resolution.PERCENT),
+//				new WeakFragmentation(new SpectralSorter(NodeSorterMode.DESC,Calculation.ABSOLUTE,DegreeOne.INCLUDE_CAL), Resolution.PERCENT),
+//				new WeakFragmentation(new SpectralSorter(NodeSorterMode.DESC,Calculation.SUM,DegreeOne.EXCLUDE), Resolution.PERCENT),
+//				new WeakFragmentation(new SpectralSorter(NodeSorterMode.DESC,Calculation.ABSOLUTE,DegreeOne.EXCLUDE), Resolution.PERCENT),
+//				new WeakFragmentation(new RandomNodeSorter(), Resolution.PERCENT)};
+//		Series s = Series.generate(nw, m, 10);
+//		Plotting.multi(s, m, "data/test/");
 //		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
 //		Config.overwrite("MAIN_DATA_FOLDER", "./data/examples/");
 //		Config.overwrite("SERIES_GRAPH_WRITE", "true");
