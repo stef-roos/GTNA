@@ -221,7 +221,7 @@ public class RoutingSP extends Metric {
 			}
 			this.spEdgesAll = this.spEdgesAll + t;	
 			distE[index] = t/(double)curedges;
-			distT[index] = sp.getTreeDistance(nodes[0], nodes[nodes.length-1]);
+			distT[index] = sp.getTreeDistance(nodes[0], nodes[nodes.length-1])/(double)curedges;
 			this.tree = this.tree + distT[index];
 			this.spEdgesAv = this.spEdgesAv + distE[index];
 			index++;

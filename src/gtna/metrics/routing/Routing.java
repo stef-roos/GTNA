@@ -64,6 +64,10 @@ public class Routing extends Metric {
 	private Distribution hopDistributionAbsolute;
 
 	private double[] betweennessCentrality;
+	private double maxCentrality;
+	private double minCentrality;
+	private double meanCentrality;
+	private double medianCentrality;
 
 	private double successRate;
 	private double failureRate;
@@ -172,9 +176,15 @@ public class Routing extends Metric {
 			}
 		}
 		Arrays.sort(bc);
+		double av = 0;
 		for (int i = 0; i < bc.length; i++) {
 			bc[i] /= (double) this.routes.length;
+			av = av + bc[i];
 		}
+		this.minCentrality = bc[0];
+		this.maxCentrality = bc[nodes-1];
+		this.medianCentrality = bc[nodes/2];
+		this.meanCentrality = av/(double)nodes;
 		return bc;
 	}
 
@@ -249,8 +259,17 @@ public class Routing extends Metric {
 		Single failureRate = new Single("ROUTING_FAILURE_RATE",
 				this.failureRate);
 
+		Single avCentral = new Single("ROUTING_CENTRALITY_AVG",
+				this.meanCentrality);
+		Single medianCentral = new Single("ROUTING_CENTRALITY_MED",
+				this.medianCentrality);
+		Single minCentral = new Single("ROUTING_CENTRALITY_MIN",
+				this.minCentrality);
+		Single maxCentral = new Single("ROUTING_CENTRALITY_MAX",
+				this.meanCentrality);
 		return new Single[] { averageHops, medianHops, maximumHops,
-				successRate, failureRate };
+				successRate, failureRate, avCentral, medianCentral,
+				minCentral, maxCentral};
 	}
 
 	private class RoutingThread extends Thread {
