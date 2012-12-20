@@ -37,7 +37,10 @@ package gtna;
 
 import gtna.data.Series;
 import gtna.metrics.Metric;
+import gtna.metrics.routing.Routing;
+import gtna.metrics.routing.RoutingCentrality;
 import gtna.metrics.routing.RoutingSP;
+import gtna.metrics.routing.RoutingStretch;
 import gtna.networks.Network;
 import gtna.networks.model.BarabasiAlbert;
 import gtna.routing.greedy.GreedyTree;
@@ -54,7 +57,8 @@ public class Test {
 	public static void main(String[] args) {
 		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
 		Network net = new BarabasiAlbert(Integer.parseInt(args[0]),Integer.parseInt(args[1]),new Transformation[]{new PrefixEmbeddingSTVirtual(-1,Integer.MAX_VALUE,160)});
-		Series.generate(net, new Metric[]{new RoutingSP(new GreedyTree(),true)}, Integer.parseInt(args[2]));
+		Series.generate(net, new Metric[]{new Routing(new GreedyTree()),new RoutingSP(), new RoutingStretch(),
+				new RoutingCentrality(3,true), new RoutingCentrality(3,false)}, Integer.parseInt(args[2]));
 //		Config.overwrite("MAIN_DATA_FOLDER", "./data/test/");
 //		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "true");
 //		Network nw = new BarabasiAlbert(1000,2,new Transformation[]

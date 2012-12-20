@@ -35,26 +35,76 @@
  */
 package gtna.metrics.routing;
 
-import java.util.HashMap;
-
 import gtna.data.Single;
 import gtna.graph.Graph;
+import gtna.io.DataWriter;
 import gtna.metrics.Metric;
 import gtna.networks.Network;
+import gtna.routing.Route;
+import gtna.util.parameter.BooleanParameter;
+import gtna.util.parameter.IntParameter;
+import gtna.util.parameter.Parameter;
+
+import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * @author stef
  *
  */
 public class RoutingCentrality extends Metric {
+	private int ttl;
+    private boolean success;
+    private Route[] routes;
+    private double[] betweennessCentrality;
+	private double maxCentrality;
+	private double minCentrality;
+	private double meanCentrality;
+	private double medianCentrality;
+
+	
+	/**
+	 * @param ttl: up which ttl should routing be considered
+	 * @param success: only consider successful attempts 
+	 */
+	public RoutingCentrality(int ttl, boolean success) {
+		super("ROUTING_CENTRALITY", new Parameter[] {new IntParameter("TTL", ttl), new BooleanParameter("SUCCESS", success)});
+		this.success = success;
+		this.ttl = ttl;
+	}
 
 	/* (non-Javadoc)
 	 * @see gtna.metrics.Metric#computeData(gtna.graph.Graph, gtna.networks.Network, java.util.HashMap)
 	 */
 	@Override
 	public void computeData(Graph g, Network n, HashMap<String, Metric> m) {
-		// TODO Auto-generated method stub
-
+		Routing routing = (Routing) m.get("ROUTING");
+        this.routes = routing.getRoutes();
+        this.betweennessCentrality = this.computeBetweennessCentrality(g.getNodeCount()) ;
+	}
+	
+	private double[] computeBetweennessCentrality(int nodes) {
+		double[] bc = new double[nodes];
+		int count = 0;
+		for (Route route : this.routes) {
+			if (!success || (route.isSuccessful() && route.getHops() <= ttl)){
+				count++;
+			for (int i = 1; i < Math.min(route.getRoute().length - 1,ttl+1); i++) {
+				bc[route.getRoute()[i]]++;
+			}
+		    }
+		}
+		Arrays.sort(bc);
+		double av = 0;
+		for (int i = 0; i < bc.length; i++) {
+			bc[i] /= (double) count;
+			av = av + bc[i];
+		}
+		this.minCentrality = bc[0];
+		this.maxCentrality = bc[nodes-1];
+		this.medianCentrality = bc[nodes/2];
+		this.meanCentrality = av/(double)nodes;
+		return bc;
 	}
 
 	/* (non-Javadoc)
@@ -62,8 +112,10 @@ public class RoutingCentrality extends Metric {
 	 */
 	@Override
 	public boolean writeData(String folder) {
-		// TODO Auto-generated method stub
-		return false;
+		boolean success = true;
+		success &= DataWriter.writeWithIndex(this.betweennessCentrality,
+				"ROUTING_CENTRALITY_BETWEENNESS_CENTRALITY", folder);
+		return success;
 	}
 
 	/* (non-Javadoc)
@@ -71,8 +123,16 @@ public class RoutingCentrality extends Metric {
 	 */
 	@Override
 	public Single[] getSingles() {
-		// TODO Auto-generated method stub
-		return null;
+		Single avCentral = new Single("ROUTING_CENTRALITY_AVG",
+				this.meanCentrality);
+		Single medianCentral = new Single("ROUTING_CENTRALITY_MED",
+				this.medianCentrality);
+		Single minCentral = new Single("ROUTING_CENTRALITY_MIN",
+				this.minCentrality);
+		Single maxCentral = new Single("ROUTING_CENTRALITY_MAX",
+				this.maxCentrality);
+		return new Single[] { avCentral, medianCentral,
+				minCentral, maxCentral};
 	}
 
 	/* (non-Javadoc)
@@ -80,8 +140,7 @@ public class RoutingCentrality extends Metric {
 	 */
 	@Override
 	public boolean applicable(Graph g, Network n, HashMap<String, Metric> m) {
-		// TODO Auto-generated method stub
-		return false;
+		return m.containsKey("ROUTING") && m.get("ROUTING") instanceof Routing ;
 	}
 
 }

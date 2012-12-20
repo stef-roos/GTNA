@@ -266,7 +266,7 @@ public class Routing extends Metric {
 		Single minCentral = new Single("ROUTING_CENTRALITY_MIN",
 				this.minCentrality);
 		Single maxCentral = new Single("ROUTING_CENTRALITY_MAX",
-				this.meanCentrality);
+				this.maxCentrality);
 		return new Single[] { averageHops, medianHops, maximumHops,
 				successRate, failureRate, avCentral, medianCentral,
 				minCentral, maxCentral};
