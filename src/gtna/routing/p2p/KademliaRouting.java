@@ -113,9 +113,11 @@ public class KademliaRouting extends RoutingAlgorithm {
 
 	private Route routeToRandomTargetBI(Graph graph, int start, Random rand) {
 		Partition<BigInteger>[] part = this.idSpaceBI.getPartitions();
-		BIIdentifier target = (BIIdentifier) part[rand.nextInt(part.length)].getRepresentativeID();
+		//BIIdentifier target = (BIIdentifier) part[rand.nextInt(part.length)].getRepresentativeID();
+		BIIdentifier target = (BIIdentifier) this.idSpaceBI.randomID(rand);
 		while (this.pBI[start].contains(target)) {
-			target = (BIIdentifier) this.idSpaceBI.randomID(rand);
+			target = (BIIdentifier) part[rand.nextInt(part.length)].getRepresentativeID();
+			//target = (BIIdentifier) this.idSpaceBI.randomID(rand);
 		}
 		return this.routeBI(new ArrayList<Integer>(), start, target, rand,
 				graph.getNodes());
@@ -123,13 +125,19 @@ public class KademliaRouting extends RoutingAlgorithm {
 
 	private Route routeBI(ArrayList<Integer> route, int current,
 			BIIdentifier target, Random rand, Node[] nodes) {
+		//System.out.println("Routing");
 		route.add(current);
-		int[] top = this.getTopAlpha(nodes[current].getOutgoingEdges(), target, rand, nodes);
+		boolean[] contacted = new boolean[nodes.length];
+		contacted[current] = true;
+		int[] top = this.getTopAlpha(nodes[current].getOutgoingEdges(), target, rand, nodes,contacted);
 		route.add(top[0]);
 		int[] next = new int[beta*alpha];
+		
 		while (route.size() < this.ttl){
+			//System.out.println("iter");
 			for (int j = 0; j < top.length; j++){
 				if (top[j] != -1){
+					contacted[top[j]] = true;
 				if (this.idSpaceBI.getPartitions()[top[j]].contains(target)) {
 					return new RouteImpl(route, true);
 				}
@@ -141,20 +149,23 @@ public class KademliaRouting extends RoutingAlgorithm {
 			}
 			for (int j = 0; j < top.length; j++){
 				if (top[j] != -1){
-					int[] nextj = this.getNext(top[j], target, rand, nodes);
+					int[] nextj = this.getNext(top[j], target, rand, nodes,contacted);
 					for (int k = 0; k < nextj.length; k++){
 						next[j*beta+k] = nextj[k];
 					}
+				} else {
+					System.out.println("---1");
 				}
+			//	}
 			}
-			top = this.getTopAlpha(next, target, rand, nodes);
+			top = this.getTopAlpha(next, target, rand, nodes,contacted);
 			route.add(top[0]);
 		}
 		return new RouteImpl(route, false);
 	}
 	
 	private int[] getTopAlpha(int[] list,
-			BIIdentifier target, Random rand, Node[] nodes){
+			BIIdentifier target, Random rand, Node[] nodes, boolean[] contacted){
 		int[] top = new int[this.alpha];
 		BigInteger[] dists = new BigInteger[this.alpha];
 		for (int i = 0; i < top.length; i++){
@@ -162,7 +173,7 @@ public class KademliaRouting extends RoutingAlgorithm {
 			dists[i] = this.idSpaceBI.getMaxDistance();
 		}
 		for (int i = 0; i < list.length; i++){
-			if (list[i] != -1){
+			if (list[i] != -1 && !contacted[list[i]]){
 			BigInteger dist = this.pBI[list[i]].distance(target);
 			for (int j = 0; j < this.alpha; j++){
 				if (dist.compareTo(dists[j]) == -1){
@@ -181,7 +192,7 @@ public class KademliaRouting extends RoutingAlgorithm {
 	}
 	
 	private int[] getNext(int current,
-			BIIdentifier target, Random rand, Node[] nodes){
+			BIIdentifier target, Random rand, Node[] nodes,  boolean[] contacted){
 		int[] next = new int[this.beta];
 		BigInteger[] dists = new BigInteger[this.beta];
 		for (int i = 0; i < next.length; i++){
@@ -191,8 +202,9 @@ public class KademliaRouting extends RoutingAlgorithm {
 		BigInteger currentDist = this.idSpaceBI.getPartitions()[current]
 				.distance(target);
 		for (int out : nodes[current].getOutgoingEdges()) {
+			if (contacted[out]) continue;
 			BigInteger dist = this.pBI[out].distance(target);
-			if (dist.compareTo(currentDist) == -1) {
+			//if (dist.compareTo(currentDist) == -1) {
 				for (int j = 0; j < this.beta; j++){
 					if (dist.compareTo(dists[j]) == -1){
 						for (int k = this.beta-1; k > j; k--){
@@ -204,7 +216,7 @@ public class KademliaRouting extends RoutingAlgorithm {
 						break;
 					}
 				}
-			}
+			//}
 		}
 		return next;
 	}

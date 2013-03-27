@@ -87,13 +87,16 @@ public class DeviationLookaheadList extends PartialLookaheadList {
 	}
 
 	/* (non-Javadoc)
-	 * @see gtna.transformation.lookahead.PartialLookaheadList#addRandom(java.util.ArrayList)
+	 * @see gtna.transformation.lookahead.PartialLookaheadList#addRandom(java.util.ArrayList, gtna.graph.Node)
 	 */
 	@Override
-	public ArrayList<LookaheadList> addRandom(ArrayList<LookaheadList> list) {
+	public ArrayList<LookaheadElement> addRandom(
+			ArrayList<LookaheadElement> list, Node a) {
 		// TODO Auto-generated method stub
 		return list;
 	}
+
+	
 
 	
 	

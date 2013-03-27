@@ -36,6 +36,7 @@
 package gtna.transformation.lookahead;
 
 import gtna.graph.Node;
+import gtna.id.lookahead.LookaheadElement;
 import gtna.id.lookahead.LookaheadList;
 
 import java.util.ArrayList;
@@ -52,9 +53,9 @@ public class PairwiseLookaheadList extends PartialLookaheadList {
 	 * @param devi
 	 * @param randomize
 	 */
-	public PairwiseLookaheadList(String key, double sigma, Deviation devi,
+	public PairwiseLookaheadList(double sigma, Deviation devi,
 			boolean randomize) {
-		super(key, sigma, devi, randomize);
+		super("PAIRWISE_LOOKAHEAD_LIST", sigma, devi, randomize);
 	}
 
 	/* (non-Javadoc)
@@ -79,11 +80,14 @@ public class PairwiseLookaheadList extends PartialLookaheadList {
 	}
 
 	/* (non-Javadoc)
-	 * @see gtna.transformation.lookahead.PartialLookaheadList#addRandom(java.util.ArrayList)
+	 * @see gtna.transformation.lookahead.PartialLookaheadList#addRandom(java.util.ArrayList, gtna.graph.Node)
 	 */
 	@Override
-	public ArrayList<LookaheadList> addRandom(ArrayList<LookaheadList> list) {
+	public ArrayList<LookaheadElement> addRandom(
+			ArrayList<LookaheadElement> list, Node a) {
 		return list;
 	}
+
+	
 
 }

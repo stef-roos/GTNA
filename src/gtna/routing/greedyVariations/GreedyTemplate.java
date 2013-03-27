@@ -193,11 +193,11 @@ public abstract class GreedyTemplate extends RoutingAlgorithm {
 				graph.getNodes());
 		if (!r.isSuccessful()){
 			int[] h = r.getRoute();
-			String line = "Failure for " + ((RingIdentifier)target).getPosition()*graph.getNodes().length;
-			for (int i = 0; i < h.length; i++){
-				line = line + " " + h[i];
-			}
-			System.out.println(line);
+//			String line = "Failure for " + ((RingIdentifier)target).getPosition()*graph.getNodes().length;
+//			for (int i = 0; i < h.length; i++){
+//				line = line + " " + h[i];
+//			}
+//			System.out.println(line);
 		} else {
 		//	System.out.println("success");
 		}

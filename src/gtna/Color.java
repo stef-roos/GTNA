@@ -21,28 +21,44 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------
- * Identifier.java
+ * Color.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
  * and Contributors 
  *
- * Original Author: benni;
+ * Original Author: stef;
  * Contributors:    -;
  *
  * Changes since 2011-05-17
  * ---------------------------------------
  *
  */
-package gtna.id;
+package gtna;
+
+import gtna.drawing.DegreeColorizer;
+import gtna.drawing.GephiDecorator;
+import gtna.drawing.GraphPlotter;
+import gtna.graph.Graph;
+import gtna.id.IdentifierSpace;
+import gtna.networks.Network;
+import gtna.networks.canonical.Star;
+import gtna.transformation.Transformation;
+import gtna.transformation.id.RandomRingIDSpace;
 
 /**
- * @author benni
- * 
+ * @author stef
+ *
  */
-public interface Identifier<Type> {
-	public Type distance(Identifier<Type> id);
+public class Color {
+	
+	public static void main(String[] args){
+		Transformation t = new RandomRingIDSpace();
+		Network net = new Star(6,new Transformation[]{new RandomRingIDSpace()});
+		Graph g = t.transform(net.generate());
+		//System.out.println(g.hasProperty("ID_SPACE"));
+		GephiDecorator[] gd = new GephiDecorator[]{new DegreeColorizer()}; 
+		GraphPlotter gp = new GraphPlotter("Test", "Test", gd, -1);
+		gp.plot(g, (IdentifierSpace) g.getProperty("ID_SPACE_0"), "test");
+	}
 
-	public boolean equals(Identifier<Type> id);
-	
-	
 }

@@ -87,28 +87,30 @@ public class LookaheadGDFS extends RoutingAlgorithm {
 	
 	private boolean includeNeighbors;
 
-	
+	private boolean closerVia;
 
 	public LookaheadGDFS(ViaSelection viaSelection) {
-		this(Integer.MAX_VALUE,viaSelection,0, false);
+		this(Integer.MAX_VALUE,viaSelection,0, false, false);
 	}
 	
 	public LookaheadGDFS(ViaSelection viaSelection, double greedy) {
-		this(Integer.MAX_VALUE,viaSelection,greedy, false);
+		this(Integer.MAX_VALUE,viaSelection,greedy, false, false);
 	}
 	
 	public LookaheadGDFS(int ttl, ViaSelection viaSelection, double greedy) {
-		this(ttl,viaSelection,greedy, false);
+		this(ttl,viaSelection,greedy, false, false);
 	}
 
-	public LookaheadGDFS(int ttl, ViaSelection viaSelection, double greedy, boolean include) {
+	public LookaheadGDFS(int ttl, ViaSelection viaSelection, double greedy, boolean include, boolean closerVia) {
 		super("LGDFS", new Parameter[] { new IntParameter("TTL", ttl), 
 				new StringParameter("VIA", viaSelection.toString()),
-				new DoubleParameter("GREEDY", greedy), new BooleanParameter("INCLUDE_NEIGHBORS", include)});
+				new DoubleParameter("GREEDY", greedy), new BooleanParameter("INCLUDE_NEIGHBORS", include),
+				new BooleanParameter("CLOSER_VIA", closerVia)});
 		this.ttl = ttl;
 		this.viaSelection = viaSelection;
 		this.greedy = greedy;
 		this.includeNeighbors = include;
+		this.closerVia = closerVia;
 	}
 
 	
@@ -144,10 +146,18 @@ public class LookaheadGDFS extends RoutingAlgorithm {
 		if (route.size() > this.ttl) {
 			return new RouteImpl(route, false);
 		}
+		LookaheadList list = this.lists.getList(current);
+
+		int via = -1;
+          
+		
 		//greedy check
 		if (this.idSpace instanceof DIdentifierSpace){
+			
 			DIdentifierSpace idSpaceD = (DIdentifierSpace)this.idSpace;
 			DPartition[] pD = (DPartition[]) idSpaceD.getPartitions();
+			double currentDist = idSpaceD.getPartitions()[current]
+					.distance(target);
 		double minDist = idSpaceD.getMaxDistance();
 		int minNode = -1;
 		for (int out : nodes[current].getOutgoingEdges()) {
@@ -160,6 +170,68 @@ public class LookaheadGDFS extends RoutingAlgorithm {
 		if (minDist <= this.greedy){
 			from.put(minNode, current);
 			return this.route(route, minNode, target, rand, nodes, from);
+		}
+		if (list.getList().length == 0 && minNode == -1) {
+			return new RouteImpl(route, false);
+		}
+		if (!this.includeNeighbors){
+		  minDist = (Double) this.idSpace.getMaxDistance();
+		} else {
+			via = minNode;
+		}
+		if (this.viaSelection == ViaSelection.sequential) {
+			for (LookaheadElement l : list.getList()) {
+				if (this.closerVia){
+					double distVia = ((DPartition) this.p[l.getVia()])
+							.distance(target);
+					if (distVia >= currentDist){
+						continue;
+					}
+				}
+				double dist = ((DPartition) l.getPartition())
+						.distance(target);
+				if (dist < minDist 
+						&& !from.containsKey(l.getVia())) {
+					minDist = dist;
+					via = l.getVia();
+				}
+			}
+		} else if (this.viaSelection == ViaSelection.minVia) {
+			ArrayList<LookaheadElement> best = new ArrayList<LookaheadElement>();
+			for (LookaheadElement l : list.getList()) {
+				if (this.closerVia){
+					double distVia = ((DPartition) this.p[l.getVia()])
+							.distance(target);
+					if (distVia >= currentDist){
+						continue;
+					}
+				}
+				double dist = ((DPartition) l.getPartition())
+						.distance(target);
+				if (dist < minDist 
+						&& !from.containsKey(l.getVia())) {
+					best.clear();
+					minDist = dist;
+					best.add(l);
+				} else if (dist == minDist && !from.containsKey(l.getVia())) {
+					best.add(l);
+				}
+			}
+			if (best.size() == 1) {
+				via = best.get(0).getVia();
+			} else if (best.size() > 1) {
+				via = best.get(0).getVia();
+				minDist = ((DPartition) this.p[best.get(0).getVia()])
+						.distance(target);
+				for (int i = 1; i < best.size(); i++) {
+					double dist = ((DPartition) this.p[best.get(i).getVia()])
+							.distance(target);
+					if (dist < minDist) {
+						minDist = dist;
+						via = best.get(i).getVia();
+					}
+				}
+			}
 		}
 		} else {
 			BIIdentifierSpace idSpaceBI = (BIIdentifierSpace)this.idSpace;
@@ -178,61 +250,9 @@ public class LookaheadGDFS extends RoutingAlgorithm {
 				from.put(minNode, current);
 				return this.route(route, minNode, target, rand, nodes, from);
 			}
-		}
-		
-		
-		LookaheadList list = this.lists.getList(current);
-
-		int via = -1;
-          
-		if (list.getList().length == 0) {
-			return new RouteImpl(route, false);
-		}
-
-		if (list.getList()[0].getPartition() instanceof DPartition) {
-			double minDist = (Double) this.idSpace.getMaxDistance();
-			if (this.viaSelection == ViaSelection.sequential) {
-				for (LookaheadElement l : list.getList()) {
-					double dist = ((DPartition) l.getPartition())
-							.distance(target);
-					if (dist < minDist 
-							&& !from.containsKey(l.getVia())) {
-						minDist = dist;
-						via = l.getVia();
-					}
-				}
-			} else if (this.viaSelection == ViaSelection.minVia) {
-				ArrayList<LookaheadElement> best = new ArrayList<LookaheadElement>();
-				for (LookaheadElement l : list.getList()) {
-					double dist = ((DPartition) l.getPartition())
-							.distance(target);
-					if (dist < minDist 
-							&& !from.containsKey(l.getVia())) {
-						best.clear();
-						minDist = dist;
-						best.add(l);
-					} else if (dist == minDist && !from.containsKey(l.getVia())) {
-						best.add(l);
-					}
-				}
-				if (best.size() == 1) {
-					via = best.get(0).getVia();
-				} else if (best.size() > 1) {
-					via = best.get(0).getVia();
-					minDist = ((DPartition) this.p[best.get(0).getVia()])
-							.distance(target);
-					for (int i = 1; i < best.size(); i++) {
-						double dist = ((DPartition) this.p[best.get(i).getVia()])
-								.distance(target);
-						if (dist < minDist) {
-							minDist = dist;
-							via = best.get(i).getVia();
-						}
-					}
-				}
-			}
-		} else if (list.getList()[0].getPartition() instanceof BIPartition) {
-			BigInteger minDist = (BigInteger) this.idSpace.getMaxDistance();
+			
+			if (!this.includeNeighbors)
+			    minDist = (BigInteger) this.idSpace.getMaxDistance();
 			if (this.viaSelection == ViaSelection.sequential) {
 				for (LookaheadElement l : list.getList()) {
 					BigInteger dist = ((BIPartition) l.getPartition())
@@ -274,10 +294,8 @@ public class LookaheadGDFS extends RoutingAlgorithm {
 					}
 				}
 			}
-		} else {
-			return null;
 		}
-
+		
 		if (via == -1) {
 			via  = from.get(current);
 			if (via == -1){

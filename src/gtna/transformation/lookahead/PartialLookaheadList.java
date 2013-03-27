@@ -207,6 +207,7 @@ public abstract class PartialLookaheadList extends  Transformation{
 										rand), neighbor.getVia()));
 						}
 					}
+					lookahead = this.addRandom(lookahead, n);
 					if (this.randomizeOrder) {
 						Collections.shuffle(lookahead);
 					}
@@ -214,7 +215,6 @@ public abstract class PartialLookaheadList extends  Transformation{
 				}
 				lists.add(new LookaheadList(n.getIndex(), list));
 			}
-			lists = this.addRandom(lists);
 			g.addProperty(g.getNextKey("LOOKAHEAD_LIST"), new LookaheadLists(
 					lists));
 		}
@@ -245,7 +245,7 @@ public abstract class PartialLookaheadList extends  Transformation{
 	
 	public abstract boolean addEdge(Node a, Node b);
 		
-	public abstract ArrayList<LookaheadList> addRandom(ArrayList<LookaheadList> list);
+	public abstract ArrayList<LookaheadElement> addRandom(ArrayList<LookaheadElement> list, Node a);
 
 }
 

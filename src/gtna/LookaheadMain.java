@@ -42,11 +42,13 @@ import gtna.networks.Network;
 import gtna.networks.model.smallWorld.Kleinberg1D;
 import gtna.networks.model.smallWorld.ScaleFreeUndirected;
 import gtna.networks.util.DescriptionWrapper;
+import gtna.networks.util.ReadableFile;
 import gtna.networks.util.ReadableList;
 import gtna.plot.Plotting;
 import gtna.routing.greedy.Greedy;
 import gtna.routing.greedyVariations.DepthFirstGreedy;
 import gtna.routing.lookahead.Lookahead;
+import gtna.routing.lookahead.Lookahead.ViaSelection;
 import gtna.routing.lookahead.LookaheadGBack;
 import gtna.routing.lookahead.LookaheadGDFS;
 import gtna.routing.lookahead.LookaheadGNB;
@@ -56,7 +58,7 @@ import gtna.transformation.attackableEmbedding.lmc.LMC;
 import gtna.transformation.attackableEmbedding.swapping.Swapping;
 import gtna.transformation.id.RandomRingIDSpaceSimple;
 import gtna.transformation.lookahead.DeviationLookaheadList;
-import gtna.transformation.lookahead.DeviationLookaheadList.Deviation;
+import gtna.transformation.lookahead.PartialLookaheadList.Deviation;
 import gtna.util.Config;
 
 /**
@@ -66,18 +68,30 @@ import gtna.util.Config;
 public class LookaheadMain {
 	
 	public static void main(String[] args) {
-		int[] nodes = {1000,5000,10000};
-		for (int j = 0; j < nodes.length; j++){
-		int n = nodes[j];
-		double[] sigma = {0,10*1/(double)n,1/(double)n,0.1*1/(double)n};
-		double[] greedy = {0, Math.log(n)/(double)n};
-		int ttl = (int)Math.ceil(Math.pow(Math.log(n)/Math.log(2),2));
-		int times = 20;
-		for (int i = 0; i < sigma.length; i++){
-				ScaleFreeUndirected(n,sigma[i], greedy, ttl, times, n+"/",10);
-			
-		}
-		}
+//		int[] nodes = {1000,5000,10000};
+//		for (int j = 0; j < nodes.length; j++){
+//		int n = nodes[j];
+//		double[] sigma = {0,10*1/(double)n,1/(double)n,0.1*1/(double)n};
+//		double[] greedy = {0, Math.log(n)/(double)n};
+//		int ttl = (int)Math.ceil(Math.pow(Math.log(n)/Math.log(2),2));
+//		int times = 20;
+//		for (int i = 0; i < sigma.length; i++){
+//				ScaleFreeUndirected(n,sigma[i], greedy, ttl, times, n+"/",10);
+//			
+//		}
+//		}
+		Config.overwrite("SERIES_GRAPH_WRITE", "true");
+		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
+//	 	Network nw = new Kleinberg1D(1000,1,1,1,true,true, new Transformation[]{
+//	 			new DeviationLookaheadList(0.01, Deviation.UNIFORM ,true)});
+//	 	Series.generate(nw, new Metric[]{new Routing(new LookaheadGDFS(1000,ViaSelection.sequential,0))}, 1);
+	 	ReadableFile nw1 = new ReadableFile("TEST", "TEST",
+	 			"data/KLEINBERG_1D-1000-1-1-1.0-true-true--DEVIATION_LOOKAHEAD_LIST-0.01-UNIFORM-true/0/graph.txt",
+	 			null);
+	 	Series.generate(nw1, new Metric[]{new Routing(new LookaheadGreedy(Integer.MAX_VALUE,ViaSelection.sequential,0,true,true)),
+	 	new Routing(new LookaheadGBack(Integer.MAX_VALUE,ViaSelection.sequential,0,true,true)),
+	 	new Routing(new LookaheadGDFS(Integer.MAX_VALUE,ViaSelection.sequential,0,true,true)),
+	 	new Routing(new LookaheadGNB(Integer.MAX_VALUE,ViaSelection.sequential,0,true,true))}, 1);
 	}
 	
 	public static void Kleinberg(int nodes, double sigma, double[] greedy, int ttl, int times, String folder){

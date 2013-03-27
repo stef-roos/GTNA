@@ -125,6 +125,7 @@ public class Gephi {
 		ExportController ec = Lookup.getDefault()
 				.lookup(ExportController.class);
 		try {
+			//System.out.println(fileName);
 			ec.exportFile(new File(fileName));
 		} catch (IOException ex) {
 			ex.printStackTrace();

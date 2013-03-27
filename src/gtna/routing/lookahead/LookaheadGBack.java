@@ -85,29 +85,33 @@ public class LookaheadGBack extends RoutingAlgorithm {
 	private double greedy;
 	
 	private boolean includeNeighbors;
+	
+	private boolean closerVia;
 
 	
 
 	public LookaheadGBack(ViaSelection viaSelection) {
-		this(Integer.MAX_VALUE,viaSelection,0, false);
+		this(Integer.MAX_VALUE,viaSelection,0, false, false);
 	}
 	
 	public LookaheadGBack(ViaSelection viaSelection, double greedy) {
-		this(Integer.MAX_VALUE,viaSelection,greedy, false);
+		this(Integer.MAX_VALUE,viaSelection,greedy, false,false);
 	}
 	
 	public LookaheadGBack(int ttl, ViaSelection viaSelection, double greedy) {
-		this(ttl,viaSelection,greedy, false);
+		this(ttl,viaSelection,greedy, false,false);
 	}
 
-	public LookaheadGBack(int ttl, ViaSelection viaSelection, double greedy, boolean include) {
+	public LookaheadGBack(int ttl, ViaSelection viaSelection, double greedy, boolean include, boolean closerVia) {
 		super("LGB", new Parameter[] { new IntParameter("TTL", ttl), 
 				new StringParameter("VIA", viaSelection.toString()),
-				new DoubleParameter("GREEDY", greedy), new BooleanParameter("INCLUDE_NEIGHBORS", include)});
+				new DoubleParameter("GREEDY", greedy), new BooleanParameter("INCLUDE_NEIGHBORS", include),
+				new BooleanParameter("CLOSER_VIA", closerVia)});
 		this.ttl = ttl;
 		this.viaSelection = viaSelection;
 		this.greedy = greedy;
 		this.includeNeighbors = include;
+		this.closerVia = closerVia;
 	}
 
 	@Override
@@ -174,11 +178,23 @@ public class LookaheadGBack extends RoutingAlgorithm {
 
 		int via = -1;
           
-		if (list.getList().length == 0) {
+		if (list.getList().length == 0 && minNode == -1) {
 			return new RouteImpl(route, false);
+		}
+		if (!this.includeNeighbors){
+		  minDist = (Double) this.idSpace.getMaxDistance();
+		} else {
+			via = minNode;
 		}
 		if (this.viaSelection == ViaSelection.sequential) {
 			for (LookaheadElement l : list.getList()) {
+				if (this.closerVia){
+					double distVia = ((DPartition) this.p[l.getVia()])
+							.distance(target);
+					if (distVia >= currentDist){
+						continue;
+					}
+				}
 				double dist = ((DPartition) l.getPartition())
 						.distance(target);
 				if (dist < minDist && dist < currentDist
@@ -190,6 +206,13 @@ public class LookaheadGBack extends RoutingAlgorithm {
 		} else if (this.viaSelection == ViaSelection.minVia) {
 			ArrayList<LookaheadElement> best = new ArrayList<LookaheadElement>();
 			for (LookaheadElement l : list.getList()) {
+				if (this.closerVia){
+					double distVia = ((DPartition) this.p[l.getVia()])
+							.distance(target);
+					if (distVia >= currentDist){
+						continue;
+					}
+				}
 				double dist = ((DPartition) l.getPartition())
 						.distance(target);
 				if (dist < minDist && dist < currentDist

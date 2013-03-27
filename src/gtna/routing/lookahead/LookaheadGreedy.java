@@ -84,27 +84,31 @@ public class LookaheadGreedy extends RoutingAlgorithm {
 	private double greedy;
 	
 	private boolean includeNeighbors;
+	
+	private boolean closerVia;
 
 	public LookaheadGreedy(ViaSelection viaSelection) {
-		this(Integer.MAX_VALUE,viaSelection,0, false);
+		this(Integer.MAX_VALUE,viaSelection,0, false, false);
 	}
 	
 	public LookaheadGreedy(ViaSelection viaSelection, double greedy) {
-		this(Integer.MAX_VALUE,viaSelection,greedy, false);
+		this(Integer.MAX_VALUE,viaSelection,greedy, false, false);
 	}
 	
 	public LookaheadGreedy(int ttl, ViaSelection viaSelection, double greedy) {
-		this(ttl,viaSelection,greedy, false);
+		this(ttl,viaSelection,greedy, false, false);
 	}
 
-	public LookaheadGreedy(int ttl, ViaSelection viaSelection, double greedy, boolean include) {
+	public LookaheadGreedy(int ttl, ViaSelection viaSelection, double greedy, boolean include, boolean closerVia) {
 		super("LOOKAHEAD_GREEDY", new Parameter[] { new IntParameter("TTL", ttl), 
 				new StringParameter("VIA", viaSelection.toString()),
-				new DoubleParameter("GREEDY", greedy), new BooleanParameter("INCLUDE_NEIGHBORS", include)});
+				new DoubleParameter("GREEDY", greedy), new BooleanParameter("INCLUDE_NEIGHBORS", include),
+				new BooleanParameter("CLOSER_VIA", closerVia)});
 		this.ttl = ttl;
 		this.viaSelection = viaSelection;
 		this.greedy = greedy;
 		this.includeNeighbors = include;
+		this.closerVia = closerVia;
 	}
 
 	
@@ -130,8 +134,6 @@ public class LookaheadGreedy extends RoutingAlgorithm {
 			Identifier target, Random rand, Node[] nodes, HashSet<Integer> seen) {
 		route.add(current);
 		seen.add(current);
-		//System.out.println("Current " + current + " id: " + this.idSpace.getPartitions()[current].toString()
-			//	+ "searching for " + target.toString() + " contains " + );
 		if (this.idSpace.getPartitions()[current].contains(target)) {
 			return new RouteImpl(route, true);
 		}
@@ -157,12 +159,82 @@ public class LookaheadGreedy extends RoutingAlgorithm {
 				minNode = out;
 			}
 		}
-		//if (minDist < 0.001)
-		 //System.out.println(minDist);
 		if (minDist <= this.greedy){
 			//System.out.println("Got here " + minNode);
 			return this.route(route, minNode, target, rand, nodes, seen);
 		}
+		
+		LookaheadList list = this.lists.getList(current);
+
+		int via = -1;
+          
+		if ( minNode == -1) {
+			return new RouteImpl(route, false);
+		}
+		if (!this.includeNeighbors){
+		  minDist = (Double) this.idSpace.getMaxDistance();
+		} else {
+			via = minNode;
+		}
+		if (this.viaSelection == ViaSelection.sequential) {
+			for (LookaheadElement l : list.getList()) {
+				if (this.closerVia){
+					double distVia = ((DPartition) this.p[l.getVia()])
+							.distance(target);
+					if (distVia >= currentDist){
+						continue;
+					}
+				}
+				double dist = ((DPartition) l.getPartition())
+						.distance(target);
+				if (dist < minDist && dist < currentDist
+						&& !seen.contains(l.getVia())) {
+					minDist = dist;
+					via = l.getVia();
+				}
+			}
+		} else if (this.viaSelection == ViaSelection.minVia) {
+			ArrayList<LookaheadElement> best = new ArrayList<LookaheadElement>();
+			for (LookaheadElement l : list.getList()) {
+				if (this.closerVia){
+					double distVia = ((DPartition) this.p[l.getVia()])
+							.distance(target);
+					if (distVia >= currentDist){
+						continue;
+					}
+				}
+				double dist = ((DPartition) l.getPartition())
+						.distance(target);
+				if (dist < minDist && dist < currentDist
+						&& !seen.contains(l.getVia())) {
+					best.clear();
+					minDist = dist;
+					best.add(l);
+				} else if (dist == minDist && !seen.contains(l.getVia())) {
+					best.add(l);
+				}
+			}
+			if (best.size() == 1) {
+				via = best.get(0).getVia();
+			} else if (best.size() > 1) {
+				via = best.get(0).getVia();
+				minDist = ((DPartition) this.p[best.get(0).getVia()])
+						.distance(target);
+				for (int i = 1; i < best.size(); i++) {
+					double dist = ((DPartition) this.p[best.get(i).getVia()])
+							.distance(target);
+					if (dist < minDist) {
+						minDist = dist;
+						via = best.get(i).getVia();
+					}
+				}
+			}
+		}
+		if (via == -1) {
+			return new RouteImpl(route, false);
+			
+		}
+		return this.route(route, via, target, rand, nodes, seen);
 		} else {
 			BIIdentifierSpace idSpaceBI = (BIIdentifierSpace)this.idSpace;
 			BIPartition[] pBI = (BIPartition[]) idSpaceBI.getPartitions();
@@ -181,65 +253,17 @@ public class LookaheadGreedy extends RoutingAlgorithm {
 			if (minDist.doubleValue() <= this.greedy){
 				return this.route(route, minNode, target, rand, nodes, seen);
 			}
-		}
-		
-		//System.out.println("Got after neighbors lookin for " + target.toString() + " at " + 
-			//	this.idSpace.getPartitions()[current].toString());
-		LookaheadList list = this.lists.getList(current);
+			
+			LookaheadList list = this.lists.getList(current);
 
-		int via = -1;
-          
-		if (list.getList().length == 0) {
-			return new RouteImpl(route, false);
-		}
-
-		if (list.getList()[0].getPartition() instanceof DPartition) {
-			double currentDist = (Double) this.p[current].distance(target);
-			double minDist = (Double) this.idSpace.getMaxDistance();
-			if (this.viaSelection == ViaSelection.sequential) {
-				for (LookaheadElement l : list.getList()) {
-					double dist = ((DPartition) l.getPartition())
-							.distance(target);
-					if (dist < minDist && dist < currentDist
-							&& !seen.contains(l.getVia())) {
-						minDist = dist;
-						via = l.getVia();
-					}
-				}
-			} else if (this.viaSelection == ViaSelection.minVia) {
-				ArrayList<LookaheadElement> best = new ArrayList<LookaheadElement>();
-				for (LookaheadElement l : list.getList()) {
-					double dist = ((DPartition) l.getPartition())
-							.distance(target);
-					if (dist < minDist && dist < currentDist
-							&& !seen.contains(l.getVia())) {
-						best.clear();
-						minDist = dist;
-						best.add(l);
-					} else if (dist == minDist && !seen.contains(l.getVia())) {
-						best.add(l);
-					}
-				}
-				if (best.size() == 1) {
-					via = best.get(0).getVia();
-				} else if (best.size() > 1) {
-					via = best.get(0).getVia();
-					minDist = ((DPartition) this.p[best.get(0).getVia()])
-							.distance(target);
-					for (int i = 1; i < best.size(); i++) {
-						double dist = ((DPartition) this.p[best.get(i).getVia()])
-								.distance(target);
-						if (dist < minDist) {
-							minDist = dist;
-							via = best.get(i).getVia();
-						}
-					}
-				}
+			int via = -1;
+	          
+			if (list.getList().length == 0) {
+				return new RouteImpl(route, false);
 			}
-		} else if (list.getList()[0].getPartition() instanceof BIPartition) {
-			BigInteger currentDist = (BigInteger) this.p[current]
-					.distance(target);
-			BigInteger minDist = (BigInteger) this.idSpace.getMaxDistance();
+			
+			if (!includeNeighbors)
+				minDist = (BigInteger) this.idSpace.getMaxDistance();
 			if (this.viaSelection == ViaSelection.sequential) {
 				for (LookaheadElement l : list.getList()) {
 					BigInteger dist = ((BIPartition) l.getPartition())
@@ -283,14 +307,20 @@ public class LookaheadGreedy extends RoutingAlgorithm {
 					}
 				}
 			}
-		} else {
-			return null;
+			if (via == -1) {
+				return new RouteImpl(route, false);
+			}
+			return this.route(route, via, target, rand, nodes, seen);	
+			
 		}
+		
+		//System.out.println("Got after neighbors lookin for " + target.toString() + " at " + 
+			//	this.idSpace.getPartitions()[current].toString());
+		
 
-		if (via == -1) {
-			return new RouteImpl(route, false);
-		}
-		return this.route(route, via, target, rand, nodes, seen);
+		
+
+		
 	}
 
 	@Override

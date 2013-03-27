@@ -21,28 +21,46 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------
- * Identifier.java
+ * DHTs.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
  * and Contributors 
  *
- * Original Author: benni;
+ * Original Author: stef;
  * Contributors:    -;
  *
  * Changes since 2011-05-17
  * ---------------------------------------
  *
  */
-package gtna.id;
+package gtna;
+
+import gtna.data.Series;
+import gtna.metrics.Metric;
+import gtna.metrics.basic.DegreeDistribution;
+import gtna.metrics.routing.Routing;
+import gtna.networks.Network;
+import gtna.networks.p2p.chord.Chord;
+import gtna.networks.p2p.chord.Chord.IDSelection;
+import gtna.routing.greedy.GreedyNode;
+import gtna.util.Config;
 
 /**
- * @author benni
- * 
+ * @author stef
+ *
  */
-public interface Identifier<Type> {
-	public Type distance(Identifier<Type> id);
+public class DHTs {
+	
+	public static void main(String[] args) {
+		Config.overwrite("MAIN_DATA_FOLDER", "data/example/");
+		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
+		Config.overwrite("SERIES_GRAPH_WRITE", "true");
+		//Network pastry = new Pastry(100,128,4,16,IDSelection.RANDOM,null);
+		Network chord = new Chord(1000,128,IDSelection.RANDOM,null);
+//		Metric[] m = new Metric[]{new Routing(new PastryRouting())};
+//		Series.generate(pastry, m, 10);
+		Metric[] m = new Metric[]{new DegreeDistribution(), new Routing(new GreedyNode())};
+		Series.generate(chord, m, 30);
+	}
 
-	public boolean equals(Identifier<Type> id);
-	
-	
 }

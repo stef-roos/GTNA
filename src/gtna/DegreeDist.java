@@ -21,28 +21,40 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------
- * Identifier.java
+ * DegreeDist.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
  * and Contributors 
  *
- * Original Author: benni;
+ * Original Author: stef;
  * Contributors:    -;
  *
  * Changes since 2011-05-17
  * ---------------------------------------
  *
  */
-package gtna.id;
+package gtna;
+
+import gtna.data.Series;
+import gtna.metrics.Metric;
+import gtna.metrics.basic.DegreeDistribution;
+import gtna.networks.util.ReadableFile;
+import gtna.plot.Plotting;
 
 /**
- * @author benni
- * 
+ * @author stef
+ *
  */
-public interface Identifier<Type> {
-	public Type distance(Identifier<Type> id);
+public class DegreeDist {
+	
+	public static void main(String[] args) {
+		String name = args[0];
+		String file = args[1];
+		
+		ReadableFile net = new ReadableFile(name,name,file,null);
+		Metric[] m = new Metric[]{new DegreeDistribution()};
+		Series s = Series.generate(net, m, 1);
+		Plotting.multi(s, m,name+"/");
+	}
 
-	public boolean equals(Identifier<Type> id);
-	
-	
 }

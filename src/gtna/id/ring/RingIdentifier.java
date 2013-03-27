@@ -37,6 +37,7 @@ package gtna.id.ring;
 
 import gtna.id.DIdentifier;
 import gtna.id.Identifier;
+import gtna.id.IdentifierSpace;
 import gtna.id.ring.RingIdentifierSpace.Distance;
 
 import java.util.Random;
@@ -75,6 +76,7 @@ public class RingIdentifier implements DIdentifier, Comparable<RingIdentifier> {
 
 	@Override
 	public Double distance(Identifier<Double> id) {
+		
 		if (this.getIdSpace().distance == Distance.RING){
 			return getRingDistance(id);
 		}
@@ -184,5 +186,9 @@ public class RingIdentifier implements DIdentifier, Comparable<RingIdentifier> {
 	 */
 	public RingIdentifierSpace getIdSpace() {
 		return this.idSpace;
+	}
+	
+	public void setIDSpace(IdentifierSpace idspace){
+		this.idSpace = (RingIdentifierSpace)idspace;
 	}
 }
