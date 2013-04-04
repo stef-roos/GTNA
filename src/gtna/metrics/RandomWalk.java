@@ -21,7 +21,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------
- * CCalculator.java
+ * RandomWalk.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
  * and Contributors 
@@ -33,32 +33,53 @@
  * ---------------------------------------
  *
  */
-package gtna.metrics.id;
+package gtna.metrics;
 
 import gtna.data.Single;
 import gtna.graph.Graph;
-import gtna.graph.Node;
-import gtna.id.DPartition;
-import gtna.id.ring.RingIdentifierSpace;
-import gtna.id.ring.RingIdentifierSpaceSimple;
-import gtna.id.ring.RingPartitionSimple;
-import gtna.metrics.Metric;
 import gtna.networks.Network;
+import gtna.util.Distribution;
+import gtna.util.parameter.BooleanParameter;
+import gtna.util.parameter.DoubleParameter;
+import gtna.util.parameter.IntParameter;
+import gtna.util.parameter.Parameter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 /**
  * @author stefanie
  *
  */
-public class CCalculator extends Metric {
+public class RandomWalk extends Metric {
+	boolean perNode;
+	int number;
+	boolean fixed;
+	double length;
+	int[][] walks;
+	Distribution lengths;
+	double guessProb;
+	
 
 	/**
 	 * @param key
 	 */
-	public CCalculator() {
-		super("CCALCULATOR");
+	public RandomWalk(boolean perNode, int number, boolean fixed, double length) {
+		super("RANDOMWALK", makePara(perNode,number,fixed,length));
+		this.perNode = perNode;
+		this.number = number;
+		this.fixed = fixed;
+		this.length = length;
+		
 		// TODO Auto-generated constructor stub
+	}
+	
+	private static Parameter[] makePara(boolean perNode, int number, boolean fixed, double length){
+		return new Parameter[] {new BooleanParameter("PERNODE",perNode),
+				new IntParameter("NUMBER",number),
+				new BooleanParameter("FIXED",fixed),
+				new DoubleParameter("LENGTH",length)};
 	}
 
 	/* (non-Javadoc)
@@ -66,48 +87,23 @@ public class CCalculator extends Metric {
 	 */
 	@Override
 	public void computeData(Graph g, Network n, HashMap<String, Metric> m) {
-		// TODO Auto-generated method stub
+		gtna.graph.Node[] nodes = g.getNodes();
+		int curNode;
+		int count = 0;
+		Random rand = new Random();
+		int total = this.perNode?number*nodes.length:number;
+		walks = new int[total][];
+		for (int i = 0; i < total; i++){
+			curNode = this.perNode?count/number:rand.nextInt(nodes.length);
+			if (nodes[curNode].getOutDegree() == 0){
+				walks[i] = new int[]{curNode};
+				continue;
+			}
+			ArrayList<Integer> visited = new ArrayList<Integer>();
+			visited.add(curNode);
+			
+		}
 
-	}
-	
-	private HashMap<Integer,Integer> getMap(DPartition[] parts){
-//		HashMap<Integer,Integer> map = new HashMap<Integer,Integer>();
-//		double[] 
-//		return map;
-		return null;
-	}
-	
-	private int[] getC(Node[] nodes, int index, DPartition[] parts, HashMap<Integer,Integer> map){
-		Node cur = nodes[index];
-		double left = 1;
-		double right = 1;
-		int indexLeft = -1, indexRight=-1;
-		int[] out = cur.getOutgoingEdges();
-		double curID = ((RingPartitionSimple)parts[index]).getId().getPosition();
-		double d;
-		for (int j = 0; j < out.length; j++){
-			double id = ((RingPartitionSimple)parts[index]).getId().getPosition();
-			d = clockwiseDist(curID, id);
-			if (d < left){
-				left = d;
-				indexLeft = out[j];
-			}
-			d = 1-d;
-			if (d < right){
-				right = d;
-				indexRight = out[j];
-			}
-		}
-		int[] res = {indexLeft, indexRight};
-		return res;
-	}
-	
-	private double clockwiseDist(double a, double b){
-		if (b >= a){
-			return b - a;
-		} else {
-			return (1+b-a);
-		}
 	}
 
 	/* (non-Javadoc)
@@ -133,9 +129,8 @@ public class CCalculator extends Metric {
 	 */
 	@Override
 	public boolean applicable(Graph g, Network n, HashMap<String, Metric> m) {
-		return g.hasProperty("ID_SPACE_0")
-				&& (g.getProperty("ID_SPACE_0") instanceof RingIdentifierSpace ||
-						g.getProperty("ID_SPACE_0") instanceof RingIdentifierSpaceSimple	);
+		// TODO Auto-generated method stub
+		return true;
 	}
 
 }
