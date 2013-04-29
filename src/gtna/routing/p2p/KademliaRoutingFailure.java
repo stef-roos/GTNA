@@ -1,4 +1,5 @@
 /* ===========================================================
+ /* ===========================================================
  * GTNA : Graph-Theoretic Network Analyzer
  * ===========================================================
  *
@@ -44,12 +45,10 @@ import gtna.id.Partition;
 import gtna.id.data.DataStorageList;
 import gtna.networks.p2p.kademlia.KademliaIdentifierSpace;
 import gtna.networks.p2p.kademlia.KademliaPartition;
-import gtna.networks.p2p.pastry.PastryIdentifier;
-import gtna.networks.p2p.pastry.PastryIdentifierSpace;
-import gtna.networks.p2p.pastry.PastryPartition;
 import gtna.routing.Route;
 import gtna.routing.RouteImpl;
 import gtna.routing.RoutingAlgorithm;
+import gtna.util.parameter.DoubleParameter;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 
@@ -62,7 +61,7 @@ import java.util.Vector;
  * @author stef
  *
  */
-public class KademliaRouting extends RoutingAlgorithm {
+public class KademliaRoutingFailure extends RoutingAlgorithm {
 
 	private KademliaIdentifierSpace idSpaceBI;
 
@@ -75,19 +74,24 @@ public class KademliaRouting extends RoutingAlgorithm {
 	private int alpha;
 	
 	private int beta;
+	
+	private double fprob;
 
-	public KademliaRouting(int alpha, int beta) {
-		super("KADEMLIA_ROUTING");
+	public KademliaRoutingFailure(int alpha, int beta, double fprob) {
+		super("KADEMLIA_ROUTING_FAILURE", new Parameter[] { new DoubleParameter("FAIL_RATE",fprob)
+				});
 		this.ttl = Integer.MAX_VALUE;
 		this.alpha = alpha;
 		this.beta = beta;
+		this.fprob = fprob;
 	}
 
-	public KademliaRouting(int ttl, int alpha, int beta) {
-		super("KADEMLIA_ROUTING", new Parameter[] { new IntParameter("TTL", ttl) });
+	public KademliaRoutingFailure(int ttl, int alpha, int beta, double fprob) {
+		super("KADEMLIA_ROUTING_FAILURE", new Parameter[] { new DoubleParameter("FAIL_RATE",fprob),new IntParameter("TTL", ttl) });
 		this.ttl = ttl;
 		this.alpha = alpha;
 		this.beta = beta;
+		this.fprob = fprob;
 	}
 
 	@Override
@@ -129,12 +133,20 @@ public class KademliaRouting extends RoutingAlgorithm {
 		route.add(current);
 		boolean[] contacted = new boolean[nodes.length];
 		contacted[current] = true;
-		int[] top = this.getTopAlpha(nodes[current].getOutgoingEdges(), target, rand, nodes,contacted);
+		Vector<Integer> list = new Vector<Integer>();
+		int[] out =nodes[current].getOutgoingEdges();
+		for (int i = 0; i < out.length; i++){
+			list.add(out[i]);
+		}
+		int[] top = this.getTopAlpha(list, target, rand, nodes,contacted);
 		route.add(top[0]);
 		int[] next = new int[beta*alpha];
+		
 		while (route.size() < this.ttl){
+			//System.out.println("iter");
 			for (int j = 0; j < top.length; j++){
 				if (top[j] != -1){
+					list.removeElement(top[j]);
 					contacted[top[j]] = true;
 				if (this.idSpaceBI.getPartitions()[top[j]].contains(target)) {
 					return new RouteImpl(route, true);
@@ -147,21 +159,26 @@ public class KademliaRouting extends RoutingAlgorithm {
 			}
 			for (int j = 0; j < top.length; j++){
 				if (top[j] != -1){
-					int[] nextj = this.getNext(top[j], target, rand, nodes,contacted);
-					for (int k = 0; k < nextj.length; k++){
-						next[j*beta+k] = nextj[k];
-					}
+					if (rand.nextDouble() >= this.fprob){
+					   int[] nextj = this.getNext(top[j], target, rand, nodes);
+					   for (int k = 0; k < nextj.length; k++){
+							list.add(nextj[k]);
+						}
+					} 
+					
 				} 
 			//	}
 			}
-			top = this.getTopAlpha(next, target, rand, nodes,contacted);
+			top = this.getTopAlpha(list, target, rand, nodes,contacted);
+			if (top[0] == -1){
+				return new RouteImpl(route, false);
+			}
 			route.add(top[0]);
-			System.out.println("iter " + route.size() + " ttl " + ttl);
 		}
 		return new RouteImpl(route, false);
 	}
 	
-	private int[] getTopAlpha(int[] list,
+	private int[] getTopAlpha(Vector<Integer> list,
 			BIIdentifier target, Random rand, Node[] nodes, boolean[] contacted){
 		int[] top = new int[this.alpha];
 		BigInteger[] dists = new BigInteger[this.alpha];
@@ -169,9 +186,10 @@ public class KademliaRouting extends RoutingAlgorithm {
 			top[i] = -1;
 			dists[i] = this.idSpaceBI.getMaxDistance();
 		}
-		for (int i = 0; i < list.length; i++){
-			if (list[i] != -1 && !contacted[list[i]]){
-			BigInteger dist = this.pBI[list[i]].distance(target);
+		for (int i = 0; i < list.size(); i++){
+			int curEl = list.get(i);
+			if (curEl != -1 && !contacted[curEl]){
+			BigInteger dist = this.pBI[curEl].distance(target);
 			for (int j = 0; j < this.alpha; j++){
 				if (dist.compareTo(dists[j]) == -1){
 					for (int k = this.alpha-1; k > j; k--){
@@ -179,7 +197,7 @@ public class KademliaRouting extends RoutingAlgorithm {
 						top[k] = top[k-1];
 					}
 					dists[j] = dist;
-					top[j] = list[i];
+					top[j] = curEl;
 					break;
 				}
 			}
@@ -189,7 +207,7 @@ public class KademliaRouting extends RoutingAlgorithm {
 	}
 	
 	private int[] getNext(int current,
-			BIIdentifier target, Random rand, Node[] nodes,  boolean[] contacted){
+			BIIdentifier target, Random rand, Node[] nodes){
 		int[] next = new int[this.beta];
 		BigInteger[] dists = new BigInteger[this.beta];
 		for (int i = 0; i < next.length; i++){
@@ -199,7 +217,6 @@ public class KademliaRouting extends RoutingAlgorithm {
 		BigInteger currentDist = this.idSpaceBI.getPartitions()[current]
 				.distance(target);
 		for (int out : nodes[current].getOutgoingEdges()) {
-			if (contacted[out]) continue;
 			BigInteger dist = this.pBI[out].distance(target);
 			//if (dist.compareTo(currentDist) == -1) {
 				for (int j = 0; j < this.beta; j++){

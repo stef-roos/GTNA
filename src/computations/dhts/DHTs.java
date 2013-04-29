@@ -40,9 +40,9 @@ import gtna.metrics.Metric;
 import gtna.metrics.basic.DegreeDistribution;
 import gtna.metrics.routing.Routing;
 import gtna.networks.Network;
-import gtna.networks.p2p.chord.Chord;
 import gtna.networks.p2p.chord.Chord.IDSelection;
-import gtna.routing.greedy.GreedyNode;
+import gtna.networks.p2p.kademlia.Kademlia;
+import gtna.routing.p2p.KademliaRoutingFailure;
 import gtna.util.Config;
 
 /**
@@ -54,13 +54,15 @@ public class DHTs {
 	public static void main(String[] args) {
 		Config.overwrite("MAIN_DATA_FOLDER", "data/example/");
 		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
-		Config.overwrite("SERIES_GRAPH_WRITE", "true");
+		//Config.overwrite("SERIES_GRAPH_WRITE", "true");
 		//Network pastry = new Pastry(100,128,4,16,IDSelection.RANDOM,null);
-		Network chord = new Chord(1000,128,IDSelection.RANDOM,null);
+		Network kad = new Kademlia(1000,128,8,IDSelection.RANDOM,null);
 //		Metric[] m = new Metric[]{new Routing(new PastryRouting())};
 //		Series.generate(pastry, m, 10);
-		Metric[] m = new Metric[]{new DegreeDistribution(), new Routing(new GreedyNode())};
-		Series.generate(chord, m, 30);
+		Metric[] m = new Metric[]{new DegreeDistribution(), new Routing(new KademliaRoutingFailure(100,3,2,0.5))};
+		Series.generate(kad, m, 10);
 	}
+	
+	
 
 }
