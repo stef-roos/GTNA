@@ -58,7 +58,7 @@ public class RemoveLargest extends RemoveNodes {
 	 */
 	public RemoveLargest(int max, Type type) {
 		super("REMOVE_LARGEST", new Parameter[] { new IntParameter("MAX", max),
-				new StringParameter("TYPE", type.toString()) });
+				new StringParameter("TYPE", type.toString()) }, false);
 		this.max = max;
 		this.type = type;
 	}

@@ -46,7 +46,7 @@ import java.util.HashMap;
  * 
  */
 public abstract class NodeGreedy extends GreedyTemplate {
-	HashMap<Integer, Integer> from;
+	protected HashMap<Integer, Integer> from;
 
 	public NodeGreedy(String name) {
 		super(name);

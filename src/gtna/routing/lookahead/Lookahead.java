@@ -75,7 +75,7 @@ public abstract class Lookahead extends RoutingAlgorithm {
 
 	private DataStorageList dsl;
 
-	protected enum ViaSelection {
+	public enum ViaSelection {
 		sequential, minVia
 	};
 

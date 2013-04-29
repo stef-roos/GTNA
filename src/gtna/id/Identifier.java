@@ -43,4 +43,6 @@ public interface Identifier<Type> {
 	public Type distance(Identifier<Type> id);
 
 	public boolean equals(Identifier<Type> id);
+	
+	
 }

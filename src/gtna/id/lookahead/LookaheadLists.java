@@ -38,6 +38,9 @@ package gtna.id.lookahead;
 import gtna.graph.Graph;
 import gtna.graph.GraphProperty;
 import gtna.id.DIdentifier;
+import gtna.id.ring.RingIdentifier;
+import gtna.id.ring.RingIdentifierSpace;
+import gtna.id.ring.RingIdentifierSpaceSimple;
 import gtna.io.Filereader;
 import gtna.io.Filewriter;
 import gtna.util.Config;
@@ -157,8 +160,19 @@ public class LookaheadLists implements GraphProperty {
 		// LISTS
 		String line = null;
 		int index = 0;
+		RingIdentifier id;
+		RingIdentifierSpaceSimple idSpace = null;
+		if (graph.getProperty("ID_SPACE_0") instanceof RingIdentifierSpace){
+			idSpace = (RingIdentifierSpaceSimple)graph.getProperty("ID_SPACE_0");
+		}
 		while ((line = fr.readLine()) != null) {
 			this.lists[index] = new LookaheadList(line, constructor);
+			if (idSpace != null){
+			for (int i = 0; i < this.lists[index].getList().length; i++){
+				id = (RingIdentifier)this.lists[index].getList()[i].getPartition().getRepresentativeID();
+				id.setIDSpace(idSpace);
+			}
+			}
 			index++;
 		}
 

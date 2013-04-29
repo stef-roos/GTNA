@@ -59,10 +59,10 @@ public class RemoveSmallest extends RemoveNodes {
 	 * @param key
 	 * @param parameters
 	 */
-	public RemoveSmallest(int min, Type type) {
+	public RemoveSmallest(int min, Type type, boolean iterative) {
 		super("REMOVE_SMALLEST", new Parameter[] {
 				new IntParameter("MIN", min),
-				new StringParameter("TYPE", type.toString()) });
+				new StringParameter("TYPE", type.toString()) },iterative);
 		this.min = min;
 		this.type = type;
 	}

@@ -39,6 +39,7 @@ import gtna.graph.Edges;
 import gtna.graph.Graph;
 import gtna.graph.Node;
 import gtna.transformation.Transformation;
+import gtna.util.parameter.BooleanParameter;
 import gtna.util.parameter.Parameter;
 
 import java.util.HashMap;
@@ -47,13 +48,24 @@ import java.util.HashMap;
  * @author stef abstract class for removing nodes
  */
 public abstract class RemoveNodes extends Transformation {
+	private boolean iteratively;
 
 	/**
 	 * @param key
 	 * @param parameters
 	 */
-	public RemoveNodes(String key, Parameter[] parameters) {
+	public RemoveNodes(String key, Parameter[] parameters, boolean iterative) {
 		super(key, parameters);
+		this.iteratively = iterative;
+	}
+	
+	private static Parameter[] addParameter(Parameter[] parameter, boolean iterative){
+	   Parameter[] paraNew = new Parameter[parameter.length+1];
+	   for (int i = 0; i < parameter.length; i++){
+		   paraNew[i] = parameter[i]; 
+	   }
+	   paraNew[paraNew.length-1] = new BooleanParameter("ITERATIVE", iterative);
+	   return paraNew;
 	}
 
 	/*
@@ -62,8 +74,9 @@ public abstract class RemoveNodes extends Transformation {
 	 * @see gtna.transformation.Transformation#transform(gtna.graph.Graph)
 	 */
 	@Override
-	public Graph transform(Graph g) {
+	public Graph transform(Graph g) { 
 		boolean[] remove = this.getNodeSet(g);
+		int removed = 0;
 		Node[] oldNodes = g.getNodes();
 		// Node[] newNodes = new Node[oldNodes.length-remove.size()];
 		HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
@@ -72,6 +85,8 @@ public abstract class RemoveNodes extends Transformation {
 			if (!remove[i]) {
 				map.put(i, count);
 				count++;
+			}else {
+				removed++;
 			}
 		}
 		Node[] newNodes = new Node[count];
@@ -96,7 +111,15 @@ public abstract class RemoveNodes extends Transformation {
 		}
 		edgeSet.fill();
 		g.setNodes(newNodes);
+		boolean anker = true;
+		if (this.iteratively && removed > 0){
+			anker = false;
+		}
+		if (anker){
 		return g;
+		} else {
+			return this.transform(g);
+		}
 	}
 
 	/*

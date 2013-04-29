@@ -21,44 +21,39 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------
- * CCalculator.java
+ * Modularity.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
  * and Contributors 
  *
- * Original Author: stefanie;
+ * Original Author: stef;
  * Contributors:    -;
  *
  * Changes since 2011-05-17
  * ---------------------------------------
  *
  */
-package gtna.metrics.id;
+package gtna.metrics.communities;
 
+import gtna.communities.Community;
 import gtna.data.Single;
 import gtna.graph.Graph;
 import gtna.graph.Node;
-import gtna.id.DPartition;
-import gtna.id.ring.RingIdentifierSpace;
-import gtna.id.ring.RingIdentifierSpaceSimple;
-import gtna.id.ring.RingPartitionSimple;
 import gtna.metrics.Metric;
 import gtna.networks.Network;
 
 import java.util.HashMap;
 
 /**
- * @author stefanie
+ * @author stef
  *
  */
-public class CCalculator extends Metric {
-
-	/**
-	 * @param key
-	 */
-	public CCalculator() {
-		super("CCALCULATOR");
-		// TODO Auto-generated constructor stub
+public class Modularity extends Metric {
+	int[] clusters;
+	
+	public Modularity(int[] clusters){
+		super("Modularity");
+		this.clusters = clusters;
 	}
 
 	/* (non-Javadoc)
@@ -66,48 +61,53 @@ public class CCalculator extends Metric {
 	 */
 	@Override
 	public void computeData(Graph g, Network n, HashMap<String, Metric> m) {
-		// TODO Auto-generated method stub
-
-	}
-	
-	private HashMap<Integer,Integer> getMap(DPartition[] parts){
-//		HashMap<Integer,Integer> map = new HashMap<Integer,Integer>();
-//		double[] 
-//		return map;
-		return null;
-	}
-	
-	private int[] getC(Node[] nodes, int index, DPartition[] parts, HashMap<Integer,Integer> map){
-		Node cur = nodes[index];
-		double left = 1;
-		double right = 1;
-		int indexLeft = -1, indexRight=-1;
-		int[] out = cur.getOutgoingEdges();
-		double curID = ((RingPartitionSimple)parts[index]).getId().getPosition();
-		double d;
-		for (int j = 0; j < out.length; j++){
-			double id = ((RingPartitionSimple)parts[index]).getId().getPosition();
-			d = clockwiseDist(curID, id);
-			if (d < left){
-				left = d;
-				indexLeft = out[j];
-			}
-			d = 1-d;
-			if (d < right){
-				right = d;
-				indexRight = out[j];
+		Node[] nodes = g.getNodes();
+//		double E = g.getEdges().size();
+//		double Q = 0;
+//		int max = 0;
+//		for (int i = 0; i < nodes.length; i++){
+//			if (clusters[i] > max){
+//				max = clusters[i];
+//			}
+//		}
+//		for (int i = 0; i <= max; i++) {
+//			double IC = 0;
+//			double OC = 0;
+//			for (Node node : nodes) {
+//				if (clusters[node.getIndex()] == i){
+//				for (int out : node.getOutgoingEdges()) {
+//					if (clusters[out] == i) {
+//						IC++;
+//					} else {
+//						OC++;
+//					}
+//				}
+//				for (int in : node.getIncomingEdges()) {
+//					if (clusters[in]!= i) {
+//						OC++;
+//					}
+//				}
+//				}
+//			}
+//
+//			Q += IC / E - Math.pow((IC + OC) / E, 2);
+//		}
+		//Node[] nodes = g.getNodes();
+		double edges = g.computeNumberOfEdges();
+		double mod = 0;
+		for (int i = 0; i < nodes.length; i++){
+			int[] out = nodes[i].getOutgoingEdges();
+			for (int j = 0; j < nodes.length; j++){
+				if (j != i && this.clusters[j] == this.clusters[i]){
+					if (nodes[i].hasNeighbor(j)){
+						mod =  mod + 1;
+					}
+					mod = mod - (double)(nodes[i].getOutDegree()*nodes[j].getOutDegree())/edges;
+				}
 			}
 		}
-		int[] res = {indexLeft, indexRight};
-		return res;
-	}
-	
-	private double clockwiseDist(double a, double b){
-		if (b >= a){
-			return b - a;
-		} else {
-			return (1+b-a);
-		}
+        mod = mod/edges;
+        System.out.println(mod);
 	}
 
 	/* (non-Javadoc)
@@ -133,9 +133,8 @@ public class CCalculator extends Metric {
 	 */
 	@Override
 	public boolean applicable(Graph g, Network n, HashMap<String, Metric> m) {
-		return g.hasProperty("ID_SPACE_0")
-				&& (g.getProperty("ID_SPACE_0") instanceof RingIdentifierSpace ||
-						g.getProperty("ID_SPACE_0") instanceof RingIdentifierSpaceSimple	);
+		// TODO Auto-generated method stub
+		return false;
 	}
 
 }

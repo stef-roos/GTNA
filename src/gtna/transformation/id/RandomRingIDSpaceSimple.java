@@ -36,6 +36,7 @@
 package gtna.transformation.id;
 
 import gtna.graph.Graph;
+import gtna.graph.GraphProperty;
 import gtna.id.ring.RingIdentifier;
 import gtna.id.ring.RingIdentifierSpace;
 import gtna.id.ring.RingIdentifierSpaceSimple;
@@ -65,6 +66,8 @@ public class RandomRingIDSpaceSimple extends Transformation {
 	private boolean wrapAround;
 	
 	private Distance distance;
+	
+	private boolean overwrite;
 
 	public RandomRingIDSpaceSimple() {
 		super("RANDOM_RING_ID_SPACE_SIMPLE");
@@ -83,7 +86,7 @@ public class RandomRingIDSpaceSimple extends Transformation {
 		this.distance = distance;
 	}
 
-	public RandomRingIDSpaceSimple(int realities, double modulus, boolean wrapAround) {
+	public RandomRingIDSpaceSimple(int realities, double modulus, boolean wrapAround, boolean overwrite) {
 		super("RANDOM_RING_ID_SPACE_SIMPLE", new Parameter[] {
 				new IntParameter("REALITIES", realities),
 				new DoubleParameter("MODULUS", modulus),
@@ -92,9 +95,10 @@ public class RandomRingIDSpaceSimple extends Transformation {
 		this.modulus = modulus;
 		this.wrapAround = wrapAround;
 		this.distance = RingIdentifierSpace.Distance.RING;
+		this.overwrite = overwrite;
 	}
 	
-	public RandomRingIDSpaceSimple(int realities, double modulus, boolean wrapAround, Distance distance) {
+	public RandomRingIDSpaceSimple(int realities, double modulus, boolean wrapAround, Distance distance, boolean overwrite) {
 		super("RANDOM_RING_ID_SPACE_SIMPLE", new Parameter[] {
 				new IntParameter("REALITIES", realities),
 				new DoubleParameter("MODULUS", modulus),
@@ -104,6 +108,7 @@ public class RandomRingIDSpaceSimple extends Transformation {
 		this.modulus = modulus;
 		this.wrapAround = wrapAround;
 		this.distance = distance;
+		this.overwrite = overwrite;
 	}
 
 	@Override

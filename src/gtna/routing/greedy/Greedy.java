@@ -121,6 +121,9 @@ public class Greedy extends RoutingAlgorithm {
 	private Route routeBI(ArrayList<Integer> route, int current,
 			BIIdentifier target, Random rand, Node[] nodes) {
 		route.add(current);
+		System.out.println("target " + target.toString() + " current " + this.idSpaceBI.getPartitions()[current].getRepresentativeID().toString() + " "
+				+ " dist " + this.idSpaceBI.getPartitions()[current]
+						.distance(target).toString());
 		if (this.idSpaceBI.getPartitions()[current].contains(target)) {
 			return new RouteImpl(route, true);
 		}
