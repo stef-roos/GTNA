@@ -21,7 +21,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------
- * RemoveMax.java
+ * DHTs.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
  * and Contributors 
@@ -33,57 +33,34 @@
  * ---------------------------------------
  *
  */
-package gtna.transformation.remove;
+package computations.dhts;
 
-import gtna.graph.Graph;
-import gtna.graph.Node;
-import gtna.util.parameter.IntParameter;
-import gtna.util.parameter.Parameter;
-import gtna.util.parameter.StringParameter;
+import gtna.data.Series;
+import gtna.metrics.Metric;
+import gtna.metrics.basic.DegreeDistribution;
+import gtna.metrics.routing.Routing;
+import gtna.networks.Network;
+import gtna.networks.p2p.chord.Chord;
+import gtna.networks.p2p.chord.Chord.IDSelection;
+import gtna.routing.greedy.GreedyNode;
+import gtna.util.Config;
 
 /**
- * @author stef remove all nodes whose degree exceeds a certian bound
+ * @author stef
+ *
  */
-public class RemoveLargest extends RemoveNodes {
-	int max;
-	Type type;
-
-	public static enum Type {
-		IN, OUT, TOTAL
-	}
-
-	/**
-	 * @param key
-	 * @param parameters
-	 */
-	public RemoveLargest(int max, Type type) {
-		super("REMOVE_LARGEST", new Parameter[] { new IntParameter("MAX", max),
-				new StringParameter("TYPE", type.toString()) }, false);
-		this.max = max;
-		this.type = type;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see gtna.transformation.remove.RemoveNodes#getNodeSet(gtna.graph.Graph)
-	 */
-	@Override
-	public boolean[] getNodeSet(Graph g) {
-		Node[] nodes = g.getNodes();
-		boolean[] remove = new boolean[nodes.length];
-		for (int j = 0; j < nodes.length; j++) {
-			if (this.type == Type.TOTAL && nodes[j].getDegree() > this.max) {
-				remove[j] = true;
-			}
-			if (this.type == Type.IN && nodes[j].getInDegree() > this.max) {
-				remove[j] = true;
-			}
-			if (this.type == Type.OUT && nodes[j].getOutDegree() > this.max) {
-				remove[j] = true;
-			}
-		}
-		return remove;
+public class DHTs {
+	
+	public static void main(String[] args) {
+		Config.overwrite("MAIN_DATA_FOLDER", "data/example/");
+		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
+		Config.overwrite("SERIES_GRAPH_WRITE", "true");
+		//Network pastry = new Pastry(100,128,4,16,IDSelection.RANDOM,null);
+		Network chord = new Chord(1000,128,IDSelection.RANDOM,null);
+//		Metric[] m = new Metric[]{new Routing(new PastryRouting())};
+//		Series.generate(pastry, m, 10);
+		Metric[] m = new Metric[]{new DegreeDistribution(), new Routing(new GreedyNode())};
+		Series.generate(chord, m, 30);
 	}
 
 }

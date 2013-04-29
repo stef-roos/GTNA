@@ -21,7 +21,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------
- * RemoveMax.java
+ * Color.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
  * and Contributors 
@@ -33,57 +33,32 @@
  * ---------------------------------------
  *
  */
-package gtna.transformation.remove;
+package computations.embedding;
 
+import gtna.drawing.DegreeColorizer;
+import gtna.drawing.GephiDecorator;
+import gtna.drawing.GraphPlotter;
 import gtna.graph.Graph;
-import gtna.graph.Node;
-import gtna.util.parameter.IntParameter;
-import gtna.util.parameter.Parameter;
-import gtna.util.parameter.StringParameter;
+import gtna.id.IdentifierSpace;
+import gtna.networks.Network;
+import gtna.networks.canonical.Star;
+import gtna.transformation.Transformation;
+import gtna.transformation.id.RandomRingIDSpace;
 
 /**
- * @author stef remove all nodes whose degree exceeds a certian bound
+ * @author stef
+ *
  */
-public class RemoveLargest extends RemoveNodes {
-	int max;
-	Type type;
-
-	public static enum Type {
-		IN, OUT, TOTAL
-	}
-
-	/**
-	 * @param key
-	 * @param parameters
-	 */
-	public RemoveLargest(int max, Type type) {
-		super("REMOVE_LARGEST", new Parameter[] { new IntParameter("MAX", max),
-				new StringParameter("TYPE", type.toString()) }, false);
-		this.max = max;
-		this.type = type;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see gtna.transformation.remove.RemoveNodes#getNodeSet(gtna.graph.Graph)
-	 */
-	@Override
-	public boolean[] getNodeSet(Graph g) {
-		Node[] nodes = g.getNodes();
-		boolean[] remove = new boolean[nodes.length];
-		for (int j = 0; j < nodes.length; j++) {
-			if (this.type == Type.TOTAL && nodes[j].getDegree() > this.max) {
-				remove[j] = true;
-			}
-			if (this.type == Type.IN && nodes[j].getInDegree() > this.max) {
-				remove[j] = true;
-			}
-			if (this.type == Type.OUT && nodes[j].getOutDegree() > this.max) {
-				remove[j] = true;
-			}
-		}
-		return remove;
+public class Color {
+	
+	public static void main(String[] args){
+		Transformation t = new RandomRingIDSpace();
+		Network net = new Star(6,new Transformation[]{new RandomRingIDSpace()});
+		Graph g = t.transform(net.generate());
+		//System.out.println(g.hasProperty("ID_SPACE"));
+		GephiDecorator[] gd = new GephiDecorator[]{new DegreeColorizer()}; 
+		GraphPlotter gp = new GraphPlotter("Test", "Test", gd, -1);
+		gp.plot(g, (IdentifierSpace) g.getProperty("ID_SPACE_0"), "test");
 	}
 
 }

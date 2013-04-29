@@ -21,7 +21,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------
- * RemoveMax.java
+ * FreenettestGraphs.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
  * and Contributors 
@@ -33,57 +33,37 @@
  * ---------------------------------------
  *
  */
-package gtna.transformation.remove;
+package computations.embedding;
 
-import gtna.graph.Graph;
-import gtna.graph.Node;
-import gtna.util.parameter.IntParameter;
-import gtna.util.parameter.Parameter;
-import gtna.util.parameter.StringParameter;
+import gtna.data.Series;
+import gtna.metrics.Metric;
+import gtna.networks.Network;
+import gtna.networks.canonical.Complete;
+import gtna.networks.model.BarabasiAlbert;
+import gtna.networks.model.smallWorld.Kleinberg1D;
+import gtna.util.Config;
 
 /**
- * @author stef remove all nodes whose degree exceeds a certian bound
+ * @author stef
+ *
  */
-public class RemoveLargest extends RemoveNodes {
-	int max;
-	Type type;
-
-	public static enum Type {
-		IN, OUT, TOTAL
-	}
-
-	/**
-	 * @param key
-	 * @param parameters
-	 */
-	public RemoveLargest(int max, Type type) {
-		super("REMOVE_LARGEST", new Parameter[] { new IntParameter("MAX", max),
-				new StringParameter("TYPE", type.toString()) }, false);
-		this.max = max;
-		this.type = type;
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see gtna.transformation.remove.RemoveNodes#getNodeSet(gtna.graph.Graph)
-	 */
-	@Override
-	public boolean[] getNodeSet(Graph g) {
-		Node[] nodes = g.getNodes();
-		boolean[] remove = new boolean[nodes.length];
-		for (int j = 0; j < nodes.length; j++) {
-			if (this.type == Type.TOTAL && nodes[j].getDegree() > this.max) {
-				remove[j] = true;
-			}
-			if (this.type == Type.IN && nodes[j].getInDegree() > this.max) {
-				remove[j] = true;
-			}
-			if (this.type == Type.OUT && nodes[j].getOutDegree() > this.max) {
-				remove[j] = true;
-			}
-		}
-		return remove;
+public class FreenettestGraphs {
+	public static void main(String[] args){
+		Config.overwrite("SERIES_GRAPH_WRITE", "true");
+//		Network nw = new Kleinberg1D(32,1,1,1,true,false,null);
+//		Series.generate(nw, new Metric[0], 1);
+//		nw = new Kleinberg1D(16,1,1,1,true,false,null);
+//		Series.generate(nw, new Metric[0], 1);
+//		
+//		nw = new Complete(16,null);
+//		Series.generate(nw, new Metric[0], 1);
+//		nw = new Complete(32,null);
+//		Series.generate(nw, new Metric[0], 1);
+		
+//		nw = new BarabasiAlbert(16,1,null);
+//		Series.generate(nw, new Metric[0], 1);
+		Network nw = new BarabasiAlbert(360,2,null);
+		Series.generate(nw, new Metric[0], 1);
 	}
 
 }

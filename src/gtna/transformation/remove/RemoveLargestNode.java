@@ -45,7 +45,7 @@ import gtna.util.parameter.Parameter;
  */
 public class RemoveLargestNode extends RemoveNodes {
 	public RemoveLargestNode() {
-		super("REMOVE_LARGEST_NODE", new Parameter[0]);
+		super("REMOVE_LARGEST_NODE", new Parameter[0], false);
 	}
 
 	@Override
