@@ -70,7 +70,10 @@ public class DepthFirstGreedyNoInfo extends RoutingAlgorithm {
 	
 	public DepthFirstGreedyNoInfo() {
 		super("DEPTH_FIRST_GREEDY_NOINFO");
+<<<<<<< HEAD
 		this.ttl = Integer.MAX_VALUE;
+=======
+>>>>>>> 9445d17ee06d98a45139e1a44bfa83c5778c2b54
 	}
 
 	public DepthFirstGreedyNoInfo(int ttl) {
@@ -93,7 +96,11 @@ public class DepthFirstGreedyNoInfo extends RoutingAlgorithm {
 			Random rand) {
 		if (this.idSpaceD != null) {
 			return this.routeD(new ArrayList<Integer>(), start,
+<<<<<<< HEAD
 					(DIdentifier) target, rand, graph.getNodes(), false,-1);
+=======
+					(DIdentifier) target, rand, graph.getNodes(),false);
+>>>>>>> 9445d17ee06d98a45139e1a44bfa83c5778c2b54
 		} else {
 			return null;
 		}
@@ -108,6 +115,7 @@ public class DepthFirstGreedyNoInfo extends RoutingAlgorithm {
 		}
 		seen = new boolean[graph.getNodes().length];
 		contacted = new boolean[seen.length][];
+<<<<<<< HEAD
 		from = new HashMap<Integer,int[]>();
 		return this.routeD(new ArrayList<Integer>(), start, target, rand,
 				graph.getNodes(), false, -1);
@@ -119,6 +127,18 @@ public class DepthFirstGreedyNoInfo extends RoutingAlgorithm {
 		if (!back && seen[current]){
 			int[] pres = from.get(current);
 			return this.routeD(route, pres[1]==-1?pres[0]:pres[1], target, rand, nodes,true, current);
+=======
+		return this.routeD(new ArrayList<Integer>(), start, target, rand,
+				graph.getNodes(), false);
+	}
+
+	private Route routeD(ArrayList<Integer> route, int current,
+			DIdentifier target, Random rand, Node[] nodes, boolean back) {
+		route.add(current);
+		if (!back && seen[current]){
+			int[] pres = from.get(current);
+			this.routeD(route, pres[1]==-1?pres[0]:pres[1], target, rand, nodes, true);
+>>>>>>> 9445d17ee06d98a45139e1a44bfa83c5778c2b54
 		}
 		if (!seen[current]){
 			contacted[current] = new boolean[nodes[current].getOutDegree()];
@@ -134,14 +154,22 @@ public class DepthFirstGreedyNoInfo extends RoutingAlgorithm {
 		if (route.size() > this.ttl) {
 			return new RouteImpl(route, false);
 		}
+<<<<<<< HEAD
+=======
+		double currentDist = this.idSpaceD.getPartitions()[current]
+				.distance(target);
+>>>>>>> 9445d17ee06d98a45139e1a44bfa83c5778c2b54
 		double minDist = this.idSpaceD.getMaxDistance();
 		int minNode = -1;
 		int minIndex = -1;
 		int[] out = nodes[current].getOutgoingEdges();
 		for(int i = 0; i < contacted[current].length; i++){
+<<<<<<< HEAD
 			if (out[i] == last){
 				contacted[current][i] = true;
 			}
+=======
+>>>>>>> 9445d17ee06d98a45139e1a44bfa83c5778c2b54
 			double dist = this.pD[out[i]].distance(target);
 			if (dist < minDist && !contacted[current][i]) {
 				minDist = dist;
@@ -154,7 +182,11 @@ public class DepthFirstGreedyNoInfo extends RoutingAlgorithm {
 			if (pre == null)
 			return new RouteImpl(route, false);
 			else {
+<<<<<<< HEAD
 				return this.routeD(route, pre[0], target, rand, nodes, true,current);	
+=======
+				this.routeD(route, pre[0], target, rand, nodes, true);	
+>>>>>>> 9445d17ee06d98a45139e1a44bfa83c5778c2b54
 			}
 		} else{
 		   int[] pre = from.get(minNode);
@@ -168,7 +200,11 @@ public class DepthFirstGreedyNoInfo extends RoutingAlgorithm {
 		   }
 		   contacted[current][minIndex] = true;
 		}
+<<<<<<< HEAD
 		   return this.routeD(route, minNode, target, rand, nodes, false,current);
+=======
+		   return this.routeD(route, minNode, target, rand, nodes, false);
+>>>>>>> 9445d17ee06d98a45139e1a44bfa83c5778c2b54
 			
 	}
 

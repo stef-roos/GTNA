@@ -184,6 +184,8 @@ public class DegreeDistribution extends Metric {
 				"DEGREE_DISTRIBUTION_OUT_DEGREE_DISTRIBUTION_CDF", folder);
 		return success;
 	}
+	
+	
 
 	/**
 	 * @return the degreeDistribution
