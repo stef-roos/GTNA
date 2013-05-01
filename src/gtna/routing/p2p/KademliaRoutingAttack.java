@@ -42,7 +42,6 @@ import gtna.id.BIIdentifier;
 import gtna.id.Identifier;
 import gtna.id.Partition;
 import gtna.id.data.DataStorageList;
-import gtna.networks.p2p.kademlia.KademliaIdentifier;
 import gtna.networks.p2p.kademlia.KademliaIdentifierSpace;
 import gtna.networks.p2p.kademlia.KademliaPartition;
 import gtna.routing.Route;
@@ -55,6 +54,7 @@ import gtna.util.parameter.Parameter;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Vector;
 
 /**
  * @author stefanie
@@ -130,21 +130,28 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 
 	private Route routeBI(ArrayList<Integer> route, int current,
 			BIIdentifier target, Random rand, Node[] nodes) {
+		//System.out.println("Routing");
 		route.add(current);
 		boolean[] contacted = new boolean[nodes.length];
 		contacted[current] = true;
-		int[] top = this.getTopAlpha(nodes[current].getOutgoingEdges(), target, rand, nodes,contacted);
+		Vector<Integer> list = new Vector<Integer>();
+		int[] out =nodes[current].getOutgoingEdges();
+		for (int i = 0; i < out.length; i++){
+			list.add(out[i]);
+		}
+		int[] top = this.getTopAlpha(list, target, rand, nodes,contacted);
 		route.add(top[0]);
+		int[] next = new int[beta*alpha];
 		if (this.idSpaceBI.getPartitions()[current].contains(target)) {
 			return new RouteImpl(route, true);
 		}
-		int[] next = new int[beta*alpha];
 		while (route.size() < this.ttl){
+			//System.out.println("iter");
 			for (int j = 0; j < top.length; j++){
 				if (top[j] != -1){
+					list.removeElement(top[j]);
 					contacted[top[j]] = true;
 				if (this.idSpaceBI.getPartitions()[top[j]].contains(target)) {
-					System.out.println("Succ");
 					return new RouteImpl(route, true);
 				}
 				if (this.dsl != null
@@ -155,26 +162,25 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 			}
 			for (int j = 0; j < top.length; j++){
 				if (top[j] != -1){
-					int[] nextj = this.getNext(top[j], target, rand, nodes,contacted);
-					for (int k = 0; k < nextj.length; k++){
-						next[j*beta+k] = nextj[k];
-					}
+					int[] nextj = this.getNext(top[j], target, rand, nodes);
+					   for (int k = 0; k < nextj.length; k++){
+							list.add(nextj[k]);
+						}
+					
+					
 				} 
 			//	}
 			}
-			top = this.getTopAlpha(next, target, rand, nodes,contacted);
-			
-			if (top[0] != -1){
-			route.add(top[0]);
-			}else {
+			top = this.getTopAlpha(list, target, rand, nodes,contacted);
+			if (top[0] == -1){
 				return new RouteImpl(route, false);
 			}
-			
+			route.add(top[0]);
 		}
 		return new RouteImpl(route, false);
 	}
 	
-	private int[] getTopAlpha(int[] list,
+	private int[] getTopAlpha(Vector<Integer> list,
 			BIIdentifier target, Random rand, Node[] nodes, boolean[] contacted){
 		int[] top = new int[this.alpha];
 		BigInteger[] dists = new BigInteger[this.alpha];
@@ -182,9 +188,10 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 			top[i] = -1;
 			dists[i] = this.idSpaceBI.getMaxDistance();
 		}
-		for (int i = 0; i < list.length; i++){
-			if (list[i] != -1 && (!contacted[list[i]] || this.isAtt[i])){
-			BigInteger dist = this.pBI[list[i]].distance(target);
+		for (int i = 0; i < list.size(); i++){
+			int curEl = list.get(i);
+			if (curEl != -1 && (!contacted[curEl] || this.isAtt[curEl])){
+			BigInteger dist = this.pBI[curEl].distance(target);
 			for (int j = 0; j < this.alpha; j++){
 				if (dist.compareTo(dists[j]) == -1){
 					for (int k = this.alpha-1; k > j; k--){
@@ -192,7 +199,7 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 						top[k] = top[k-1];
 					}
 					dists[j] = dist;
-					top[j] = list[i];
+					top[j] = curEl;
 					break;
 				}
 			}
@@ -202,7 +209,7 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 	}
 	
 	private int[] getNext(int current,
-			BIIdentifier target, Random rand, Node[] nodes,  boolean[] contacted){
+			BIIdentifier target, Random rand, Node[] nodes){
 		int[] next = new int[this.beta];
 		if (this.isAtt[current]){
 			for (int j = 0; j < next.length; j++){
