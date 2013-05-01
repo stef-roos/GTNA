@@ -88,9 +88,17 @@ public class KademliaPartition implements BIPartition {
 
 	@Override
 	public boolean contains(Identifier<BigInteger> id) {
+		
 		BigInteger v = ((KademliaIdentifier) id).getId();
 		BigInteger p = this.pred.getId();
 		BigInteger s = this.succ.getId();
+		if (s.compareTo(p) == 0){
+			if (v.compareTo(s) == 0){
+				return true;
+			}else {
+				return false;
+			}
+		}
 		if (this.pred.getId().compareTo(this.succ.getId()) == -1) {
 			return p.compareTo(v) == -1 && v.compareTo(s) != 1;
 		} else {

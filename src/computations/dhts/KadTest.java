@@ -41,8 +41,9 @@ import gtna.metrics.basic.DegreeDistribution;
 import gtna.metrics.routing.Routing;
 import gtna.networks.Network;
 import gtna.networks.p2p.chord.Chord.IDSelection;
-import gtna.networks.p2p.kademlia.Kademlia;
-import gtna.routing.p2p.KademliaRouting;
+import gtna.networks.p2p.kademlia.KademliaEclipse;
+import gtna.networks.p2p.kademlia.KademliaEclipse.AttackerSelection;
+import gtna.routing.p2p.KademliaRoutingAttack;
 import gtna.util.Config;
 
 /**
@@ -58,10 +59,13 @@ public class KadTest {
 		Config.overwrite("MAIN_DATA_FOLDER", "data/kadtest/");
 		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
 		//Network pastry = new Pastry(100,128,4,16,IDSelection.RANDOM,null);
-		Network kad = new Kademlia(10000,128,8,IDSelection.RANDOM,null);
+		
+		Network kad = new KademliaEclipse(1000,128,8,IDSelection.RANDOM,
+				5,AttackerSelection.TARGET,0,null);
 //		Metric[] m = new Metric[]{new Routing(new PastryRouting())};
 //		Series.generate(pastry, m, 10);
-		Metric[] m = new Metric[]{new DegreeDistribution(), new Routing(new KademliaRouting(10,3,2))};
+		Metric[] m = new Metric[]{new DegreeDistribution(), 
+				new Routing(new KademliaRoutingAttack(30,3,2))};
 		Series.generate(kad, m, 5);
 
 	}

@@ -37,7 +37,6 @@ package computations.embedding;
 
 import gtna.data.Series;
 import gtna.metrics.Metric;
-import gtna.metrics.id.CCalculator;
 import gtna.networks.Network;
 import gtna.networks.util.ReadableFile;
 import gtna.transformation.Transformation;
@@ -59,46 +58,46 @@ public class CEmbeddings {
 //				new LMC(6000, LMC.MODE_UNRESTRICTED,0, LMC.DELTA_1_N,0)});
 //			Metric[] m = {new CCalculator()};
 //			Series.generate(nw, m, 20);
-		swapping(20);
+		//swapping(20);
 		//if (args[0] == "lmc"){
-			lmc(20);
+		//	lmc(20);
 		//}else {
 			//swapping(it1,it2);
 		//}
 	}
 	
-	private static void swapping(int it1,int it2){
-		Network nw = new ReadableFile("SWAP", "SWAP", "data/WOT.txt",new Transformation[]{new RandomRingIDSpaceSimple(),
-			new Swapping(6000)});
-		Metric[] m = {new CCalculator()};
-		Series.generate(nw, m, it1,it2);
-	}
-	
-	private static void lmc(int it1,int it2){
-		Network nw = new ReadableFile("LMC", "LMC", "data/WOT.txt",new Transformation[]{new RandomRingIDSpaceSimple(),
-			new LMC(6000, LMC.MODE_UNRESTRICTED,0, LMC.DELTA_1_N,0)});
-		Metric[] m = {new CCalculator()};
-		Series.generate(nw, m, it1,it2);
-	}
-	
-	private static void swapping(int it1){
-		Network nw = new ReadableFile("SWAP", "SWAP", "data/WOT.txt",new Transformation[]{new RandomRingIDSpaceSimple(),
-			new Swapping(6000)});
-		Metric[] m = {new CCalculator()};
-		Series.generate(nw, m, it1);
-	}
-	
-	private static void lmc(int it1){
-		Network nw = new ReadableFile("LMC", "LMC", "data/WOT.txt",new Transformation[]{new RandomRingIDSpaceSimple(),
-			new LMC(6000, LMC.MODE_UNRESTRICTED,0, LMC.DELTA_1_N,0)});
-		Metric[] m = {new CCalculator()};
-		Series.generate(nw, m, it1);
-	}
-	
-	private static void makeReducedGraph(String name, String file){
-		Config.overwrite("SERIES_GRAPH_WRITE", "true");
-		Network nw = new ReadableFile(name,name,file,new Transformation[]{new LargestWeaklyConnectedComponent(),new RemoveSmallest(2,RemoveSmallest.Type.IN,true)});
-		Series.generate(nw, new Metric[0], 1);
-	}
+//	private static void swapping(int it1,int it2){
+//		Network nw = new ReadableFile("SWAP", "SWAP", "data/WOT.txt",new Transformation[]{new RandomRingIDSpaceSimple(),
+//			new Swapping(6000)});
+//		//Metric[] m = {new CCalculator()};
+//		Series.generate(nw, m, it1,it2);
+//	}
+//	
+//	private static void lmc(int it1,int it2){
+//		Network nw = new ReadableFile("LMC", "LMC", "data/WOT.txt",new Transformation[]{new RandomRingIDSpaceSimple(),
+//			new LMC(6000, LMC.MODE_UNRESTRICTED,0, LMC.DELTA_1_N,0)});
+//		Metric[] m = {new CCalculator()};
+//		Series.generate(nw, m, it1,it2);
+//	}
+//	
+//	private static void swapping(int it1){
+//		Network nw = new ReadableFile("SWAP", "SWAP", "data/WOT.txt",new Transformation[]{new RandomRingIDSpaceSimple(),
+//			new Swapping(6000)});
+//		Metric[] m = {new CCalculator()};
+//		Series.generate(nw, m, it1);
+//	}
+//	
+//	private static void lmc(int it1){
+//		Network nw = new ReadableFile("LMC", "LMC", "data/WOT.txt",new Transformation[]{new RandomRingIDSpaceSimple(),
+//			new LMC(6000, LMC.MODE_UNRESTRICTED,0, LMC.DELTA_1_N,0)});
+//		Metric[] m = {new CCalculator()};
+//		Series.generate(nw, m, it1);
+//	}
+//	
+//	private static void makeReducedGraph(String name, String file){
+//		Config.overwrite("SERIES_GRAPH_WRITE", "true");
+//		Network nw = new ReadableFile(name,name,file,new Transformation[]{new LargestWeaklyConnectedComponent(),new RemoveSmallest(2,RemoveSmallest.Type.IN,true)});
+//		Series.generate(nw, new Metric[0], 1);
+//	}
 
 }
