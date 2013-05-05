@@ -58,15 +58,17 @@ public class KadTest {
 	public static void main(String[] args) {
 		Config.overwrite("MAIN_DATA_FOLDER", "data/kadtest/");
 		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
-		//Network pastry = new Pastry(100,128,4,16,IDSelection.RANDOM,null);
-		
-		Network kad = new KademliaEclipse(1000,128,8,IDSelection.RANDOM,5, AttackerSelection.TARGET, 0,
+		Network kad = new KademliaEclipse(1000,128,3,IDSelection.RANDOM,0, AttackerSelection.TARGET, 0,
 				null);
+//		Network kad = new Kademlia(1000,128,3,IDSelection.RANDOM,
+//				null);
 //		Metric[] m = new Metric[]{new Routing(new PastryRouting())};
 //		Series.generate(pastry, m, 10);
+//		Metric[] m = new Metric[]{new DegreeDistribution(), 
+//				new RoutingAttack(new KademliaRoutingAttack(30,3,2))};
 		Metric[] m = new Metric[]{new DegreeDistribution(), 
 				new Routing(new KademliaRoutingAttack(30,3,2))};
-		Series.generate(kad, m, 5);
+		Series.generate(kad, m, 10);
 
 	}
 

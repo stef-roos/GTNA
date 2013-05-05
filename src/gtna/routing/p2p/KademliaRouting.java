@@ -136,8 +136,6 @@ public class KademliaRouting extends RoutingAlgorithm {
 		}
 		int[] top = this.getTopAlpha(list, target, rand, nodes,contacted);
 		route.add(top[0]);
-		int[] next = new int[beta*alpha];
-		
 		while (route.size() < this.ttl){
 			//System.out.println("iter");
 			for (int j = 0; j < top.length; j++){
@@ -153,11 +151,15 @@ public class KademliaRouting extends RoutingAlgorithm {
 				}
 				}
 			}
+			Vector<Integer> conRound = new Vector<Integer>();
 			for (int j = 0; j < top.length; j++){
 				if (top[j] != -1){
 					int[] nextj = this.getNext(top[j], target, rand, nodes);
 					   for (int k = 0; k < nextj.length; k++){
+						   if (!conRound.contains(nextj[k])){
 							list.add(nextj[k]);
+							conRound.add(nextj[k]);
+						   }
 						}
 					
 					
@@ -209,8 +211,8 @@ public class KademliaRouting extends RoutingAlgorithm {
 			next[i] = -1;
 			dists[i] = this.idSpaceBI.getMaxDistance();
 		}
-		BigInteger currentDist = this.idSpaceBI.getPartitions()[current]
-				.distance(target);
+//		BigInteger currentDist = this.idSpaceBI.getPartitions()[current]
+//				.distance(target);
 		for (int out : nodes[current].getOutgoingEdges()) {
 			//if (contacted[out]) continue;
 			BigInteger dist = this.pBI[out].distance(target);

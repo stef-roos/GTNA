@@ -77,6 +77,8 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 	private BIIdentifier target;
 	
 	private boolean[] isAtt;
+	
+	private int count1 = 0;
 
 	public KademliaRoutingAttack(int alpha, int beta) {
 		super("KADEMLIA_ROUTING_ATTACK");
@@ -130,19 +132,35 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 
 	private Route routeBI(ArrayList<Integer> route, int current,
 			BIIdentifier target, Random rand, Node[] nodes) {
+		//System.out.println("Start " + current);
 		//System.out.println("Routing");
 		route.add(current);
 		boolean[] contacted = new boolean[nodes.length];
 		contacted[current] = true;
 		Vector<Integer> list = new Vector<Integer>();
+		//int countA=0;
 		int[] out =nodes[current].getOutgoingEdges();
 		for (int i = 0; i < out.length; i++){
 			list.add(out[i]);
+//			if (this.isAtt[out[i]]){
+//				countA++;
+//			}
 		}
+		
 		int[] top = this.getTopAlpha(list, target, rand, nodes,contacted);
-		route.add(top[0]);
-		int[] next = new int[beta*alpha];
-		if (this.idSpaceBI.getPartitions()[current].contains(target)) {
+		int re = getRep(top);
+//		if (countA > 2){
+//			System.out.println("High att " + countA + " re " + re );
+//		}
+		if (re == -1){
+			//count1++;
+			route.add(top[0]);
+			return new RouteImpl(route, false);
+		}
+		
+		route.add(re);
+		if (this.idSpaceBI.getPartitions()[re].contains(target)) {
+			//System.out.println("Found in step 1");
 			return new RouteImpl(route, true);
 		}
 		while (route.size() < this.ttl){
@@ -152,6 +170,7 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 					list.removeElement(top[j]);
 					contacted[top[j]] = true;
 				if (this.idSpaceBI.getPartitions()[top[j]].contains(target)) {
+					//System.out.println("Found " + route.size());
 					return new RouteImpl(route, true);
 				}
 				if (this.dsl != null
@@ -160,11 +179,15 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 				}
 				}
 			}
+			Vector<Integer> conRound = new Vector<Integer>();
 			for (int j = 0; j < top.length; j++){
 				if (top[j] != -1){
 					int[] nextj = this.getNext(top[j], target, rand, nodes);
 					   for (int k = 0; k < nextj.length; k++){
+						   if (!conRound.contains(nextj[k])){
 							list.add(nextj[k]);
+							conRound.add(nextj[k]);
+						   }
 						}
 					
 					
@@ -172,12 +195,28 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 			//	}
 			}
 			top = this.getTopAlpha(list, target, rand, nodes,contacted);
-			if (top[0] == -1){
+			re = getRep(top);
+			if (re == -1){
+				route.add(current);
 				return new RouteImpl(route, false);
 			}
-			route.add(top[0]);
+			route.add(re);
 		}
 		return new RouteImpl(route, false);
+	}
+	
+	private int getRep(int[] top){
+		int res = -1;
+		for (int i = 0; i < top.length; i++){
+			if (top[i] != -1 && !isAtt[top[i]]){
+				res = top[i];
+			} 
+//			else {
+//				if (i > 0)
+//				System.out.println("Attacker i="+i);
+//			}
+		}
+		return res;
 	}
 	
 	private int[] getTopAlpha(Vector<Integer> list,
@@ -190,8 +229,13 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 		}
 		for (int i = 0; i < list.size(); i++){
 			int curEl = list.get(i);
-			if (curEl != -1 && (!contacted[curEl] || this.isAtt[curEl])){
-			BigInteger dist = this.pBI[curEl].distance(target);
+			BigInteger dist;
+			if (curEl != -1){
+				dist = this.pBI[curEl].distance(target);
+				} else {
+					dist = BigInteger.ONE;
+				}		
+			if (curEl == -1 || !contacted[curEl]){
 			for (int j = 0; j < this.alpha; j++){
 				if (dist.compareTo(dists[j]) == -1){
 					for (int k = this.alpha-1; k > j; k--){
@@ -204,7 +248,9 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 				}
 			}
 			}
+				
 		}
+		
 		return top;
 	}
 	
@@ -213,7 +259,7 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 		int[] next = new int[this.beta];
 		if (this.isAtt[current]){
 			for (int j = 0; j < next.length; j++){
-				next[j] = current;
+				next[j] = -1;
 			}
 			return next;
 		}
@@ -222,8 +268,8 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 			next[i] = -1;
 			dists[i] = this.idSpaceBI.getMaxDistance();
 		}
-		BigInteger currentDist = this.idSpaceBI.getPartitions()[current]
-				.distance(target);
+//		BigInteger currentDist = this.idSpaceBI.getPartitions()[current]
+//				.distance(target);
 		for (int out : nodes[current].getOutgoingEdges()) {
 			BigInteger dist = this.pBI[out].distance(target);
 			//if (this.isAtt[out]) 
@@ -262,6 +308,7 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 		p = graph.getProperty("ATTACKER_0");
 		this.isAtt = ((AddAttackers)p).getAttackers();
 		this.target = ((AddAttackers)p).getTarget();
+		this.count1 = 0;
 		if (graph.hasProperty("DATA_STORAGE_0")) {
 			this.dsl = (DataStorageList) graph.getProperty("DATA_STORAGE_0");
 		}

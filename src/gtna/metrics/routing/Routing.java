@@ -55,18 +55,18 @@ import java.util.Random;
 
 public class Routing extends Metric {
 
-	private RoutingAlgorithm ra;
-	private int routesPerNode;
+	protected RoutingAlgorithm ra;
+	protected int routesPerNode;
 
-	private Route[] routes;
+	protected Route[] routes;
 
-	private Distribution hopDistribution;
-	private Distribution hopDistributionAbsolute;
+	protected Distribution hopDistribution;
+	protected Distribution hopDistributionAbsolute;
 
-	private double[] betweennessCentrality;
+	protected double[] betweennessCentrality;
 
-	private double successRate;
-	private double failureRate;
+	protected double successRate;
+	protected double failureRate;
 
 	public Routing(RoutingAlgorithm ra) {
 		super("ROUTING", new Parameter[] { new ParameterListParameter(
@@ -154,7 +154,7 @@ public class Routing extends Metric {
 		this.failureRate = 1 - this.successRate;
 	}
 
-	private double computeSuccessRate() {
+	protected double computeSuccessRate() {
 		int success = 0;
 		for (Route route : this.routes) {
 			if (route.isSuccessful()) {
@@ -164,7 +164,7 @@ public class Routing extends Metric {
 		return (double) success / (double) this.routes.length;
 	}
 
-	private double[] computeBetweennessCentrality(int nodes) {
+	protected double[] computeBetweennessCentrality(int nodes) {
 		double[] bc = new double[nodes];
 		for (Route route : this.routes) {
 			for (int i = 1; i < route.getRoute().length - 1; i++) {
@@ -178,7 +178,7 @@ public class Routing extends Metric {
 		return bc;
 	}
 
-	private Distribution computeHopDistribution() {
+	protected Distribution computeHopDistribution() {
 		long[] hops = new long[1];
 		long counter = 0;
 		for (Route route : this.routes) {
@@ -190,7 +190,7 @@ public class Routing extends Metric {
 		return new Distribution(hops, counter);
 	}
 
-	private Distribution computeHopDistributionAbsolute() {
+	protected Distribution computeHopDistributionAbsolute() {
 		long[] hops = new long[1];
 		for (Route route : this.routes) {
 			if (route.isSuccessful()) {
@@ -200,7 +200,7 @@ public class Routing extends Metric {
 		return new Distribution(hops, this.routes.length);
 	}
 
-	private long[] inc(long[] values, int index) {
+	protected long[] inc(long[] values, int index) {
 		try {
 			values[index]++;
 			return values;
