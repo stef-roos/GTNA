@@ -113,11 +113,9 @@ public class KademliaRouting extends RoutingAlgorithm {
 
 	private Route routeToRandomTargetBI(Graph graph, int start, Random rand) {
 		Partition<BigInteger>[] part = this.idSpaceBI.getPartitions();
-		//BIIdentifier target = (BIIdentifier) part[rand.nextInt(part.length)].getRepresentativeID();
-		BIIdentifier target = (BIIdentifier) this.idSpaceBI.randomID(rand);
+		BIIdentifier target = (BIIdentifier) part[rand.nextInt(part.length)].getRepresentativeID();
 		while (this.pBI[start].contains(target)) {
 			target = (BIIdentifier) part[rand.nextInt(part.length)].getRepresentativeID();
-			//target = (BIIdentifier) this.idSpaceBI.randomID(rand);
 		}
 		return this.routeBI(new ArrayList<Integer>(), start, target, rand,
 				graph.getNodes());

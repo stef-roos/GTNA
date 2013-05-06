@@ -100,9 +100,8 @@ public class RandomKademliaIDSpace extends Transformation {
 			Arrays.sort(ids);
 
 			KademliaPartition[] partitions = new KademliaPartition[ids.length];
-			partitions[0] = new KademliaPartition(ids[ids.length - 1], ids[0]);
-			for (int i = 1; i < partitions.length; i++) {
-				partitions[i] = new KademliaPartition(ids[i - 1], ids[i]);
+			for (int i = 0; i < partitions.length; i++) {
+				partitions[i] = new KademliaPartition(ids[i]);
 			}
 
 			// Util.randomize(partitions, rand);

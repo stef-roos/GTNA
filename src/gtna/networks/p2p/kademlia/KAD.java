@@ -104,11 +104,11 @@ public class KAD extends Network {
 			for (int i = 0; i < this.bits; i++){
 				counts[i] = new int[5];
 			}
-			KademliaIdentifier id = partitions[node.getIndex()].getSucc();
+			KademliaIdentifier id = (KademliaIdentifier) partitions[node.getIndex()].getRepresentativeID();
 			Node[] randNodes = randomize.sort(graph, rand);
             for (int j = 0; j < randNodes.length; j++){
             	//val = id.distance(partitions[randNodes[j].getIndex()].getSucc()).bitLength();
-            	dist = id.distance(partitions[randNodes[j].getIndex()].getSucc());
+            	dist = id.distance(partitions[randNodes[j].getIndex()].getRepresentativeID());
             	val = dist.bitLength();
             	if (val == this.bits){
             	   valShift = dist.shiftRight(val-4).intValue();

@@ -126,10 +126,12 @@ public class KademliaEclipse extends Network {
 			BIIdentifier id = partitions[node.getIndex()].getRepresentativeID();
 			Node[] randNodes = randomize.sort(graph, rand);
             for (int j = 0; j < randNodes.length; j++){
+            	if (randNodes[j].getIndex() != node.getIndex()){
             	val = id.distance(partitions[randNodes[j].getIndex()].getRepresentativeID()).bitLength();
             	if (counts[val] < this.k){
             		counts[val]++;
             		edges.add(node.getIndex(), randNodes[j].getIndex());
+            	}
             	}
             }
 		}

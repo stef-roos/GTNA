@@ -48,13 +48,10 @@ import java.math.BigInteger;
  */
 public class KademliaPartition implements BIPartition {
 
-	private KademliaIdentifier pred;
+	private KademliaIdentifier id;
 
-	private KademliaIdentifier succ;
-
-	public KademliaPartition(KademliaIdentifier pred, KademliaIdentifier succ) {
-		this.pred = pred;
-		this.succ = succ;
+	public KademliaPartition(KademliaIdentifier id) {
+		this.id = id;
 	}
 
 	public KademliaPartition(String string) {
@@ -62,13 +59,13 @@ public class KademliaPartition implements BIPartition {
 	}
 
 	public KademliaPartition(String string, KademliaIdentifierSpace idSpace) {
-		String[] temp = string.replace("(", "").replace("]", "").split(",");
-		this.pred = new KademliaIdentifier(idSpace, temp[0]);
-		this.succ = new KademliaIdentifier(idSpace, temp[1]);
+		String[] temp = string.replace("(", "").replace(")", "").split(",");
+		this.id = new KademliaIdentifier(idSpace, temp[0]);
+		//this.succ = new KademliaIdentifier(idSpace, temp[1]);
 	}
 
 	public String toString() {
-		return "(" + this.pred.getId() + "," + this.succ.getId() + "]";
+		return "(" + this.id.getId() + ")";
 	}
 
 	@Override
@@ -76,69 +73,56 @@ public class KademliaPartition implements BIPartition {
 		if (this.contains(id)) {
 			return BigInteger.ZERO;
 		}
-		return this.succ.distance(id);
+		return this.id.distance(id);
 	}
 
 	@Override
 	public boolean equals(Partition<BigInteger> partition) {
 		KademliaPartition compare = (KademliaPartition) partition;
-		return this.pred.equals(compare.getPred())
-				&& this.succ.equals(compare.getSucc());
+		return this.id.equals(compare.getRepresentativeID());
 	}
 
 	@Override
 	public boolean contains(Identifier<BigInteger> id) {
-		
-		BigInteger v = ((KademliaIdentifier) id).getId();
-		BigInteger p = this.pred.getId();
-		BigInteger s = this.succ.getId();
-		if (s.compareTo(p) == 0){
-			if (v.compareTo(s) == 0){
-				return true;
-			}else {
-				return false;
-			}
+		if (this.id.equals(id)){
+			return true;
 		}
-		if (this.pred.getId().compareTo(this.succ.getId()) == -1) {
-			return p.compareTo(v) == -1 && v.compareTo(s) != 1;
-		} else {
-			return p.compareTo(v) == -1 || v.compareTo(s) != 1;
-		}
+		return false;
 	}
 
 	@Override
 	public BIIdentifier getRepresentativeID() {
-		return this.succ;
+		return this.id;
 	}
 
-	/**
-	 * @return the pred
-	 */
-	public KademliaIdentifier getPred() {
-		return this.pred;
-	}
+//	/**
+//	 * @return the pred
+//	 */
+//	public KademliaIdentifier getPred() {
+//		return this.pred;
+//	}
+//
+//	/**
+//	 * @param pred
+//	 *            the pred to set
+//	 */
+//	public void setPred(KademliaIdentifier pred) {
+//		this.pred = pred;
+//	}
 
-	/**
-	 * @param pred
-	 *            the pred to set
-	 */
-	public void setPred(KademliaIdentifier pred) {
-		this.pred = pred;
-	}
+//	/**
+//	 * @return the succ
+//	 */
+//	public KademliaIdentifier getSucc() {
+//		return this.succ;
+//	}
 
-	/**
-	 * @return the succ
-	 */
-	public KademliaIdentifier getSucc() {
-		return this.succ;
-	}
-
-	/**
-	 * @param succ
-	 *            the succ to set
-	 */
-	public void setSucc(KademliaIdentifier succ) {
-		this.succ = succ;
-	}
+//	/**
+//	 * @param succ
+//	 *            the succ to set
+//	 */
+//	public void setSucc(KademliaIdentifier succ) {
+//		this.succ = succ;
+//	}
 
 }

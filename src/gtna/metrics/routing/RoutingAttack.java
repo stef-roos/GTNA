@@ -78,18 +78,29 @@ public class RoutingAttack extends Routing {
 		GraphProperty p1 = graph.getProperty("ID_SPACE_0");
 		BIIdentifierSpace idSpaceBI = (BIIdentifierSpace) p1;
 		Partition<BigInteger>[] pBI = idSpaceBI.getPartitions();
-		boolean[] isAtt = ((AddAttackers)p).getAttackers();
-		BIIdentifier target = ((AddAttackers)p).getTarget();
+		boolean[] isAtt;
+		BIIdentifier target;
+		if (p != null){
+		   isAtt = ((AddAttackers)p).getAttackers();
+		   target = ((AddAttackers)p).getTarget();
+		   
 		for (int i = 0; i < isAtt.length; i++){
 			if (isAtt[i]){
 				att++;
 			}
+			this.routes = new Route[graph.getNodes().length-att-1];
+		}}else {
+			isAtt = new boolean[graph.getNodes().length];
+			target = null;
+			this.routes = new Route[graph.getNodes().length-att];
 		}
-		this.routes = new Route[graph.getNodes().length-att-1];
+		
+		
 		
 		int index = 0;
         for (Node start : graph.getNodes()) {
-				if (!isAtt[start.getIndex()] && !pBI[start.getIndex()].contains(target)){
+				if (!isAtt[start.getIndex()] && (target == null ||
+						!pBI[start.getIndex()].contains(target))){
 				this.routes[index++] = ra.routeToRandomTarget(graph,
 							start.getIndex(), rand);
 				}

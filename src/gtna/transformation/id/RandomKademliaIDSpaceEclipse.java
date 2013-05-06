@@ -114,9 +114,8 @@ public class RandomKademliaIDSpaceEclipse extends Transformation {
 			Arrays.sort(ids);
 
 			KademliaPartition[] partitions = new KademliaPartition[ids.length];
-			partitions[0] = new KademliaPartition(ids[0], ids[0]);
-			for (int i = 1; i < partitions.length; i++) {
-				partitions[i] = new KademliaPartition(ids[i], ids[i]);
+			for (int i = 0; i < partitions.length; i++) {
+				partitions[i] = new KademliaPartition(ids[i]);
 			}
 
 			// Util.randomize(partitions, rand);

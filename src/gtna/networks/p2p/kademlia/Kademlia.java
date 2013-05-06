@@ -35,15 +35,12 @@
  */
 package gtna.networks.p2p.kademlia;
 
-import java.math.BigInteger;
-import java.util.HashSet;
-import java.util.Random;
-
 import gtna.graph.Edges;
 import gtna.graph.Graph;
 import gtna.graph.Node;
 import gtna.graph.sorting.NodeSorter;
 import gtna.graph.sorting.RandomNodeSorter;
+import gtna.id.BIIdentifier;
 import gtna.networks.Network;
 import gtna.networks.p2p.chord.Chord.IDSelection;
 import gtna.transformation.Transformation;
@@ -51,6 +48,8 @@ import gtna.transformation.id.RandomKademliaIDSpace;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 import gtna.util.parameter.StringParameter;
+
+import java.util.Random;
 
 /**
  * @author stefanie
@@ -100,13 +99,15 @@ public class Kademlia extends Network {
 		
 		for (Node node : nodes) {
 			int[] counts = new int[this.bits+1];
-			KademliaIdentifier id = partitions[node.getIndex()].getSucc();
+			BIIdentifier id = partitions[node.getIndex()].getRepresentativeID();
 			Node[] randNodes = randomize.sort(graph, rand);
             for (int j = 0; j < randNodes.length; j++){
-            	val = id.distance(partitions[randNodes[j].getIndex()].getSucc()).bitLength();
+            	if (randNodes[j].getIndex() != node.getIndex()){
+            	val = id.distance(partitions[randNodes[j].getIndex()].getRepresentativeID()).bitLength();
             	if (counts[val] < this.k){
             		counts[val]++;
             		edges.add(node.getIndex(), randNodes[j].getIndex());
+            	}
             	}
             }
 		}
