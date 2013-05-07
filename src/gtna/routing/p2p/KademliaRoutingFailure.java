@@ -117,11 +117,9 @@ public class KademliaRoutingFailure extends RoutingAlgorithm {
 
 	private Route routeToRandomTargetBI(Graph graph, int start, Random rand) {
 		Partition<BigInteger>[] part = this.idSpaceBI.getPartitions();
-		//BIIdentifier target = (BIIdentifier) part[rand.nextInt(part.length)].getRepresentativeID();
-		BIIdentifier target = (BIIdentifier) this.idSpaceBI.randomID(rand);
+		BIIdentifier target = (BIIdentifier) part[rand.nextInt(part.length)].getRepresentativeID();
 		while (this.pBI[start].contains(target)) {
 			target = (BIIdentifier) part[rand.nextInt(part.length)].getRepresentativeID();
-			//target = (BIIdentifier) this.idSpaceBI.randomID(rand);
 		}
 		return this.routeBI(new ArrayList<Integer>(), start, target, rand,
 				graph.getNodes());
@@ -140,8 +138,6 @@ public class KademliaRoutingFailure extends RoutingAlgorithm {
 		}
 		int[] top = this.getTopAlpha(list, target, rand, nodes,contacted);
 		route.add(top[0]);
-		int[] next = new int[beta*alpha];
-		
 		while (route.size() < this.ttl){
 			//System.out.println("iter");
 			for (int j = 0; j < top.length; j++){
@@ -157,15 +153,19 @@ public class KademliaRoutingFailure extends RoutingAlgorithm {
 				}
 				}
 			}
+			Vector<Integer> conRound = new Vector<Integer>();
 			for (int j = 0; j < top.length; j++){
 				if (top[j] != -1){
-					if (rand.nextDouble() >= this.fprob){
-					   int[] nextj = this.getNext(top[j], target, rand, nodes);
+					if (rand.nextDouble() > this.fprob){
+					int[] nextj = this.getNext(top[j], target, rand, nodes);
 					   for (int k = 0; k < nextj.length; k++){
+						   if (!conRound.contains(nextj[k])){
 							list.add(nextj[k]);
+							conRound.add(nextj[k]);
+						   }
 						}
-					} 
 					
+					}
 				} 
 			//	}
 			}
@@ -214,9 +214,10 @@ public class KademliaRoutingFailure extends RoutingAlgorithm {
 			next[i] = -1;
 			dists[i] = this.idSpaceBI.getMaxDistance();
 		}
-		BigInteger currentDist = this.idSpaceBI.getPartitions()[current]
-				.distance(target);
+//		BigInteger currentDist = this.idSpaceBI.getPartitions()[current]
+//				.distance(target);
 		for (int out : nodes[current].getOutgoingEdges()) {
+			//if (contacted[out]) continue;
 			BigInteger dist = this.pBI[out].distance(target);
 			//if (dist.compareTo(currentDist) == -1) {
 				for (int j = 0; j < this.beta; j++){

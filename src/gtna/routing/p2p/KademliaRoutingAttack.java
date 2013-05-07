@@ -78,7 +78,6 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 	
 	private boolean[] isAtt;
 	
-	private int count1 = 0;
 
 	public KademliaRoutingAttack(int alpha, int beta) {
 		super("KADEMLIA_ROUTING_ATTACK");
@@ -132,8 +131,6 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 
 	private Route routeBI(ArrayList<Integer> route, int current,
 			BIIdentifier target, Random rand, Node[] nodes) {
-		System.out.println("Start " + current);
-		//System.out.println("Routing");
 		route.add(current);
 		boolean[] contacted = new boolean[nodes.length];
 		contacted[current] = true;
