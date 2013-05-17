@@ -59,15 +59,15 @@ public class KadTest {
 		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
 //		Network kad = new KademliaEclipse(1000,128,8,IDSelection.RANDOM,10, AttackerSelection.TARGET, 0,
 //				null);
-		Network kad = new Kademlia(1000,128,3,IDSelection.RANDOM,
+		Network kad = new Kademlia(10000,128,8,IDSelection.RANDOM,
 				null);
 //		Metric[] m = new Metric[]{new Routing(new PastryRouting())};
 //		Series.generate(pastry, m, 10);
 		Metric[] m = new Metric[]{new DegreeDistribution(), 
-				new RoutingAttack(new KademliaRoutingFailure(30,3,2,0.3))};
+				new RoutingAttack(new KademliaRoutingFailure(30,3,2,0.1))};
 //		Metric[] m = new Metric[]{new DegreeDistribution(), 
 //				new Routing(new KademliaRouting(30,3,2))};
-		Series.generate(kad, m, 50);
+		Series.generate(kad, m, 10);
 
 	}
 
