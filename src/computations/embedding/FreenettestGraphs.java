@@ -62,7 +62,7 @@ public class FreenettestGraphs {
 		
 //		nw = new BarabasiAlbert(16,1,null);
 //		Series.generate(nw, new Metric[0], 1);
-		Network nw = new BarabasiAlbert(360,2,null);
+		Network nw = new BarabasiAlbert(200,2,null);
 		Series.generate(nw, new Metric[0], 1);
 	}
 
