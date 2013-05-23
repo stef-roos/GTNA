@@ -59,15 +59,15 @@ public class RandomKademliaIDSpace extends Transformation {
 
 	private boolean uniform;
 	
-	private int k;
+	//private int k;
 
-	public RandomKademliaIDSpace(int bits, boolean uniform, int k) {
+	public RandomKademliaIDSpace(int bits, boolean uniform) {
 		super("RANDOM_KADEMLIA_ID_SPACE", new Parameter[] {
-				new IntParameter("BITS", bits), new IntParameter("BUCKET_SIZE", k),
+				new IntParameter("BITS", bits), 
 				new BooleanParameter("ID_SELECTION", uniform) });
 		this.bits = bits;
 		this.uniform = uniform;
-		this.k = k;
+		//this.k = k;
 	}
 
 	
@@ -76,7 +76,7 @@ public class RandomKademliaIDSpace extends Transformation {
 	public Graph transform(Graph graph) {
 		Random rand = new Random();
 		
-			KademliaIdentifierSpace idSpace = new KademliaIdentifierSpace(this.bits,this.k);
+			KademliaIdentifierSpace idSpace = new KademliaIdentifierSpace(this.bits);
 			KademliaIdentifier[] ids = new KademliaIdentifier[graph.getNodes().length];
 			if (this.uniform) {
 				BigInteger stepSize = idSpace.getModulus().divide(

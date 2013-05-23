@@ -80,14 +80,16 @@ public class KademliaRoutingAttack extends RoutingAlgorithm {
 	
 
 	public KademliaRoutingAttack(int alpha, int beta) {
-		super("KADEMLIA_ROUTING_ATTACK");
+		super("KADEMLIA_ROUTING_ATTACK", new Parameter[]{new IntParameter("ALPHA", alpha),
+				new IntParameter("BETA", beta)});
 		this.ttl = Integer.MAX_VALUE;
 		this.alpha = alpha;
 		this.beta = beta;
 	}
 
 	public KademliaRoutingAttack(int ttl, int alpha, int beta) {
-		super("KADEMLIA_ROUTING_ATTACK", new Parameter[] { new IntParameter("TTL", ttl) });
+		super("KADEMLIA_ROUTING_ATTACK", new Parameter[] {new IntParameter("ALPHA", alpha),
+				new IntParameter("BETA", beta), new IntParameter("TTL", ttl) });
 		this.ttl = ttl;
 		this.alpha = alpha;
 		this.beta = beta;

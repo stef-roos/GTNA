@@ -88,6 +88,8 @@ public class Routing extends Metric {
 
 		this.init();
 	}
+	
+	
 
 	private void init() {
 		this.hopDistribution = new Distribution(new double[] { -1 });

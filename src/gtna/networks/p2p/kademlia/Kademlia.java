@@ -84,7 +84,7 @@ public class Kademlia extends Network {
 		Node[] nodes = Node.init(this.getNodes(), graph);
 		graph.setNodes(nodes);
 		RandomKademliaIDSpace t = new RandomKademliaIDSpace(this.bits,
-				this.selection == IDSelection.UNIFORM, this.k);
+				this.selection == IDSelection.UNIFORM);
 		graph = t.transform(graph);
 
 		KademliaIdentifierSpace idSpace = (KademliaIdentifierSpace) graph

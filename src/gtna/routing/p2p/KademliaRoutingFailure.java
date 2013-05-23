@@ -78,7 +78,8 @@ public class KademliaRoutingFailure extends RoutingAlgorithm {
 	private double fprob;
 
 	public KademliaRoutingFailure(int alpha, int beta, double fprob) {
-		super("KADEMLIA_ROUTING_FAILURE", new Parameter[] { new DoubleParameter("FAIL_RATE",fprob)
+		super("KADEMLIA_ROUTING_FAILURE", new Parameter[] {new IntParameter("ALPHA", alpha),
+				new IntParameter("BETA", beta), new DoubleParameter("FAIL_RATE",fprob)
 				});
 		this.ttl = Integer.MAX_VALUE;
 		this.alpha = alpha;
@@ -87,7 +88,9 @@ public class KademliaRoutingFailure extends RoutingAlgorithm {
 	}
 
 	public KademliaRoutingFailure(int ttl, int alpha, int beta, double fprob) {
-		super("KADEMLIA_ROUTING_FAILURE", new Parameter[] { new DoubleParameter("FAIL_RATE",fprob),new IntParameter("TTL", ttl) });
+		super("KADEMLIA_ROUTING_FAILURE", new Parameter[] {new IntParameter("ALPHA", alpha),
+				new IntParameter("BETA", beta),
+				new DoubleParameter("FAIL_RATE",fprob),new IntParameter("TTL", ttl) });
 		this.ttl = ttl;
 		this.alpha = alpha;
 		this.beta = beta;

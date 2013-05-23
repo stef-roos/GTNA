@@ -99,11 +99,11 @@ public class KademliaEclipse extends Network {
 		if (this.aSelect == AttackerSelection.TARGET){
 			//int target = (new Random()).nextInt(nodes.length-this.att);
 		   RandomKademliaIDSpaceEclipse t = new RandomKademliaIDSpaceEclipse(this.bits,
-				this.selection == IDSelection.UNIFORM, this.k,this.att, target);
+				this.selection == IDSelection.UNIFORM, this.att, target);
 		   graph = t.transform(graph);
 		} else {
 			RandomKademliaIDSpace t = new RandomKademliaIDSpace(this.bits,
-					this.selection == IDSelection.UNIFORM, this.k);
+					this.selection == IDSelection.UNIFORM);
 			   graph = t.transform(graph);	
 		}
 		

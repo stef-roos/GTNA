@@ -21,12 +21,12 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * ---------------------------------------
- * KAD.java
+ * BittorrentKademlia.java
  * ---------------------------------------
  * (C) Copyright 2009-2011, by Benjamin Schiller (P2P, TU Darmstadt)
  * and Contributors 
  *
- * Original Author: stef;
+ * Original Author: stefanie;
  * Contributors:    -;
  *
  * Changes since 2011-05-17
@@ -40,6 +40,7 @@ import gtna.graph.Graph;
 import gtna.graph.Node;
 import gtna.graph.sorting.NodeSorter;
 import gtna.graph.sorting.RandomNodeSorter;
+import gtna.id.BIIdentifier;
 import gtna.networks.Network;
 import gtna.networks.p2p.chord.Chord.IDSelection;
 import gtna.transformation.Transformation;
@@ -52,12 +53,12 @@ import java.math.BigInteger;
 import java.util.Random;
 
 /**
- * @author stef
+ * @author stefanie
  *
  */
-public class KAD extends Network {
+public class BittorrentKademlia extends Network {
 
-	private int k;
+	private int[] k;
 	private int bits;
 	private IDSelection selection;
 	/**
@@ -66,13 +67,19 @@ public class KAD extends Network {
 	 * @param parameters
 	 * @param transformations
 	 */
-	public KAD(int nodes, int bits, int k, IDSelection selection,
+	public BittorrentKademlia(int nodes, int bits, IDSelection selection,
 			Transformation[] transformations) {
-		super("KAD", nodes, new Parameter[] { new IntParameter("BITS", bits),
-				new IntParameter("BUCKET_SIZE", k), 
+		super("BITTORRENT_KADEMLIA", nodes, new Parameter[] { new IntParameter("BITS", bits), 
 		new StringParameter("ID_SELECTION", selection.toString())}, transformations);
 		this.bits = bits;
-		this.k = k;
+		this.k = new int[bits+1];
+		for (int i = 0; i < this.k.length-4; i++){
+			this.k[i] = 8;
+		}
+		this.k[k.length-4] = 16;
+		this.k[k.length-3] = 32;
+		this.k[k.length-2] = 64;
+		this.k[k.length-1] = 128;
 	}
 
 	/* (non-Javadoc)
@@ -92,51 +99,23 @@ public class KAD extends Network {
 		KademliaPartition[] partitions = (KademliaPartition[]) idSpace
 				.getPartitions();
 
-		Edges edges = new Edges(nodes, nodes.length * this.bits*k);
+		Edges edges = new Edges(nodes, nodes.length * this.bits*8);
 		Random rand = new Random();
 		NodeSorter randomize = new RandomNodeSorter();
 		int val;
-		BigInteger dist;
-		int valShift;
+		
 		for (Node node : nodes) {
-			int[][] counts = new int[this.bits+1][];
-			counts[this.bits] = new int[8];
-			for (int i = 0; i < this.bits; i++){
-				counts[i] = new int[5];
-			}
-			KademliaIdentifier id = (KademliaIdentifier) partitions[node.getIndex()].getRepresentativeID();
+			int[] counts = new int[this.bits+1];
+			BIIdentifier id = partitions[node.getIndex()].getRepresentativeID();
 			Node[] randNodes = randomize.sort(graph, rand);
             for (int j = 0; j < randNodes.length; j++){
-            	//val = id.distance(partitions[randNodes[j].getIndex()].getSucc()).bitLength();
-            	dist = id.distance(partitions[randNodes[j].getIndex()].getRepresentativeID());
-            	val = dist.bitLength();
-            	if (val == this.bits){
-            	   valShift = dist.shiftRight(val-4).intValue();
-            	   if (counts[this.bits][valShift-8] < this.k){
-            		   counts[val][valShift-8]++;
-                       edges.add(node.getIndex(), randNodes[j].getIndex());
-            	   }
-            	}else {
-            		 valShift = dist.shiftRight(val-4).intValue();
-            		 int index = 0;
-              	 if (valShift == 12 || valShift == 13){
-            		   index = 1;
-            	   }
-              	if (valShift == 10 || valShift == 11){
-         		   index = 2;
-         	   }
-              	if (valShift == 9){
-         		   index = 3;
-         	   }
-              	if (valShift == 8){
-         		   index = 4;
-         	   }
-              	if (counts[val][index] < this.k){
-         		   counts[val][index]++;
-                    edges.add(node.getIndex(), randNodes[j].getIndex());
-         	   }
+            	if (randNodes[j].getIndex() != node.getIndex()){
+            	val = id.distance(partitions[randNodes[j].getIndex()].getRepresentativeID()).bitLength();
+            	if (counts[val] < this.k[val]){
+            		counts[val]++;
+            		edges.add(node.getIndex(), randNodes[j].getIndex());
             	}
-
+            	}
             }
 		}
 		edges.fill();
@@ -144,5 +123,5 @@ public class KAD extends Network {
 		graph.getTimer().end();
 		return graph;
 	}
-
-}
+	
+}	

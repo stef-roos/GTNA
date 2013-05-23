@@ -57,7 +57,7 @@ public class KademliaIdentifierSpace implements BIIdentifierSpace {
 
 	private BigInteger modulus;
 	
-	private int k;
+	//private int k;
 
 	private KademliaPartition[] partitions;
 
@@ -66,9 +66,8 @@ public class KademliaIdentifierSpace implements BIIdentifierSpace {
 		this.modulus = BigInteger.ZERO;
 	}
 
-	public KademliaIdentifierSpace(int bits, int k) {
+	public KademliaIdentifierSpace(int bits) {
 		this.bits = bits;
-		this.k = k;
 		this.modulus = BigInteger.ONE.add(BigInteger.ONE).pow(this.bits);
 	}
 
@@ -195,7 +194,7 @@ public class KademliaIdentifierSpace implements BIIdentifierSpace {
 	}
 
 	public KademliaIdentifierSpace clone() {
-		KademliaIdentifierSpace result = new KademliaIdentifierSpace(this.bits, this.k);
+		KademliaIdentifierSpace result = new KademliaIdentifierSpace(this.bits);
 		result.setPartitions(this.partitions.clone());
 		return result;
 	}

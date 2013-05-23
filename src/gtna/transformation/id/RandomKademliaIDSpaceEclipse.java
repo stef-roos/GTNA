@@ -67,9 +67,9 @@ public class RandomKademliaIDSpaceEclipse extends Transformation {
 	
 	private int targetNode;
 
-	public RandomKademliaIDSpaceEclipse(int bits, boolean uniform, int k, int att, int target) {
+	public RandomKademliaIDSpaceEclipse(int bits, boolean uniform, int att, int target) {
 		super("RANDOM_KADEMLIA_ID_SPACE_ECLIPSE", new Parameter[] {
-				new IntParameter("BITS", bits), new IntParameter("BUCKET_SIZE", k),
+				new IntParameter("BITS", bits), 
 				new BooleanParameter("ID_SELECTION", uniform), new IntParameter("ATTACKER", att),
 				new IntParameter("TARGET", target)});
 		this.bits = bits;
@@ -85,7 +85,7 @@ public class RandomKademliaIDSpaceEclipse extends Transformation {
 	public Graph transform(Graph graph) {
 		Random rand = new Random();
 		
-			KademliaIdentifierSpace idSpace = new KademliaIdentifierSpace(this.bits,this.k);
+			KademliaIdentifierSpace idSpace = new KademliaIdentifierSpace(this.bits);
 			KademliaIdentifier[] ids = new KademliaIdentifier[graph.getNodes().length];
 			if (this.uniform) {
 				BigInteger stepSize = idSpace.getModulus().divide(

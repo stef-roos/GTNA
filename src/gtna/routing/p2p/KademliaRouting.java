@@ -77,14 +77,16 @@ public class KademliaRouting extends RoutingAlgorithm {
 	private int beta;
 
 	public KademliaRouting(int alpha, int beta) {
-		super("KADEMLIA_ROUTING");
+		super("KADEMLIA_ROUTING", new Parameter[]{new IntParameter("ALPHA", alpha),
+				new IntParameter("BETA", beta)});
 		this.ttl = Integer.MAX_VALUE;
 		this.alpha = alpha;
 		this.beta = beta;
 	}
 
 	public KademliaRouting(int ttl, int alpha, int beta) {
-		super("KADEMLIA_ROUTING", new Parameter[] { new IntParameter("TTL", ttl) });
+		super("KADEMLIA_ROUTING", new Parameter[] {new IntParameter("ALPHA", alpha),
+				new IntParameter("BETA", beta), new IntParameter("TTL", ttl) });
 		this.ttl = ttl;
 		this.alpha = alpha;
 		this.beta = beta;
