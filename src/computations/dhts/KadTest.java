@@ -38,11 +38,11 @@ package computations.dhts;
 import gtna.data.Series;
 import gtna.metrics.Metric;
 import gtna.metrics.basic.DegreeDistribution;
-import gtna.metrics.routing.RoutingAttack;
+import gtna.metrics.routing.Routing;
 import gtna.networks.Network;
 import gtna.networks.p2p.chord.Chord.IDSelection;
-import gtna.networks.p2p.kademlia.Kademlia;
-import gtna.routing.p2p.KademliaRoutingFailure;
+import gtna.networks.p2p.kademlia.BittorrentKademlia;
+import gtna.routing.p2p.KademliaRouting;
 import gtna.util.Config;
 
 /**
@@ -55,19 +55,19 @@ public class KadTest {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Config.overwrite("MAIN_DATA_FOLDER", "data/kadtest/");
-		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
+		Config.overwrite("MAIN_DATA_FOLDER", "/home/stef/svns/drafts/p2pmodel/results/simu/");
+		//Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
 //		Network kad = new KademliaEclipse(1000,128,8,IDSelection.RANDOM,10, AttackerSelection.TARGET, 0,
 //				null);
-		Network kad = new Kademlia(10000,128,8,IDSelection.RANDOM,
+		Network kad = new BittorrentKademlia(100000,128,IDSelection.RANDOM,
 				null);
 //		Metric[] m = new Metric[]{new Routing(new PastryRouting())};
 //		Series.generate(pastry, m, 10);
-		Metric[] m = new Metric[]{new DegreeDistribution(), 
-				new RoutingAttack(new KademliaRoutingFailure(30,3,2,0.1))};
 //		Metric[] m = new Metric[]{new DegreeDistribution(), 
-//				new Routing(new KademliaRouting(30,3,2))};
-		Series.generate(kad, m, 10);
+//				new RoutingAttack(new KademliaRoutingFailure(30,3,2,0.1))};
+		Metric[] m = new Metric[]{new DegreeDistribution(), 
+				new Routing(new KademliaRouting(16,3,2)), new Routing(new KademliaRouting(16,4,1))};
+		Series.generate(kad, m, 20);
 
 	}
 

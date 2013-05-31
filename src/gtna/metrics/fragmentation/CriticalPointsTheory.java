@@ -61,8 +61,10 @@ public class CriticalPointsTheory extends Metric {
 		LARGEST, // deletion of nodes with highest degree
 		LARGESTOUT, // deletion of nodes with highest out-degree
 		LARGESTIN, // deletion of nodes with highest out-degree
-		DEGREEBOUND // deletion of edges of nodes so that maximal degree is
+		DEGREEBOUND, // deletion of edges of nodes so that maximal degree is
 					// bounded
+		DEGREEBOUND_IN, //bounded in-degree
+		DEGREEBOUND_OUT //bounded out-degree
 	}
 
 	private double p;
@@ -208,7 +210,7 @@ public class CriticalPointsTheory extends Metric {
 		return true;
 	}
 
-	private double[] getCPDirectedRandom(double[][] dist) {
+	public static double[] getCPDirectedRandom(double[][] dist) {
 		int degR = dist.length + dist[0].length;
 		double[] r = getk0Directed(dist);
 		double pR;
@@ -220,7 +222,7 @@ public class CriticalPointsTheory extends Metric {
 		return new double[] { pR, degR };
 	}
 
-	private double[] getCPUndirectedRandom(double[] dd) {
+	public static double[] getCPUndirectedRandom(double[] dd) {
 		double k0 = getk0(dd);
 		double r = 1 - 1 / (k0 - 1);
 		if (r < 0) {
@@ -304,26 +306,38 @@ public class CriticalPointsTheory extends Metric {
 		double av = 0;
 		for (int i = 0; i < dist.length; i++) {
 			for (int j = 0; j < dist[i].length; j++) {
-				av = av + i * dist[i][j];
+				av = av + j * dist[i][j];
 			}
 		}
 		double p = 0;
 		double out = 0;
-		double in = 0;
 		double fpN;
-		double k0;
-		for (int j = dist.length - 1; j > 0; j--) {
-			for (int i = 0; i < dist[j].length; i++) {
-				p = p + dist[j][i];
-				out = out + dist[j][i] * j / (av);
-				in = in + dist[j][i] * i / av;
+		double[][] distN = new double[dist.length][];
+		for (int i = 0; i < dist.length; i++){
+			distN[i] = new double[dist[i].length];
+			for (int j = 0; j < dist[i].length; j++){
+				distN[i][j] = dist[i][j];
 			}
-			double[] r = getk0Directed(dist, Integer.MAX_VALUE, j,
-					Integer.MAX_VALUE);
-			fpN = (1 - out) * (1 - in) * 2 * r[0] - (1 - in) * r[1] - (1 - out)
-					* r[2];
-			if (fpN < 0) {
-				return new double[] { p, j - 1 };
+		}
+		for (int i = dist.length-1; i > 0; i--) {
+			for (int j = 0; j < dist[i].length; j++) {
+					p = p + dist[i][j];
+					out = out + i*dist[i][j] / av;
+			}
+			for (int k = 0; k < i; k++){
+				for (int j = 0; j < dist[k].length; i++){
+					distN[k][j] = dist[k][j]/(1-p);
+				}
+			}
+			for (int j = 0; j < dist.length; j++){
+				distN[i][j] = 0;
+			}	
+			double[] r = getk0Directed(distN, Integer.MAX_VALUE,
+					Integer.MAX_VALUE, Integer.MAX_VALUE);
+			fpN = 1 - r[1]/(2*r[0]-r[2]);
+			//System.out.println(p + " " + fpN + " " + in);
+			if (fpN < out) {
+				return new double[] { p, i - 1 };
 			}
 		}
 		return new double[] { 1, 1 };
@@ -341,23 +355,119 @@ public class CriticalPointsTheory extends Metric {
 			}
 		}
 		double p = 0;
-		double out = 0;
 		double in = 0;
 		double fpN;
+		double[][] distN = new double[dist.length][];
+		for (int i = 0; i < dist.length; i++){
+			distN[i] = new double[dist[i].length];
+			for (int j = 0; j < dist[i].length; j++){
+				distN[i][j] = dist[i][j];
+			}
+		}
 		for (int j = max; j > 0; j--) {
 			for (int i = 0; i < dist.length; i++) {
 				if (j < dist[i].length) {
 					p = p + dist[i][j];
-					out = out + dist[i][j] * i / (av);
-					in = in + dist[i][j] * j / av;
+					in = in + j*dist[i][j] / av;
 				}
 			}
-			double[] r = getk0Directed(dist, Integer.MAX_VALUE,
-					Integer.MAX_VALUE, j);
-			fpN = (1 - out) * (1 - in) * 2 * r[0] - (1 - in) * r[1] - (1 - out)
-					* r[2];
-			if (fpN < 0) {
+			for (int k = 0; k < j; k++){
+				for (int i = 0; i < dist.length; i++){
+					if (k < dist[i].length)
+					distN[i][k] = dist[i][k]/(1-p);
+				}
+			}
+			for (int i = 0; i < dist.length; i++){
+				if (j < dist[i].length)
+					distN[i][j] = 0;
+				}
+			
+			double[] r = getk0Directed(distN, Integer.MAX_VALUE,
+					Integer.MAX_VALUE, Integer.MAX_VALUE);
+			fpN = 1 - r[2]/(2*r[0]-r[1]);
+			//System.out.println(p + " " + fpN + " " + in);
+			if (fpN < in) {
 				return new double[] { p, j - 1 };
+			}
+		}
+		return new double[] { 1, 1 };
+	}
+	
+	public static double[] getCPDirectedMaxDegreeIn(double[][] dist) {
+		double av = 0;
+		int max = 0;
+		for (int i = 0; i < dist.length; i++) {
+			for (int j = 0; j < dist[i].length; j++) {
+				av = av + j * dist[i][j];
+			}
+			if (dist[i].length - 1 > max) {
+				max = dist[i].length - 1;
+			}
+		}
+		double p = 0;
+		double in = 0;
+		double fpN;
+		double[][] distN = new double[dist.length][];
+		for (int i = 0; i < dist.length; i++){
+			distN[i] = new double[dist[i].length];
+			for (int j = 0; j < dist[i].length; j++){
+				distN[i][j] = dist[i][j];
+			}
+		}
+		for (int j = max; j > 0; j--) {
+			in = in + p/av;
+			for (int i = 0; i < dist.length; i++) {
+				if (j < dist[i].length) {
+					p = p + dist[i][j];
+					in = in + dist[i][j]/ av;
+					distN[i][j-1] = dist[i][j-1]+distN[i][j];
+					distN[i][j] = 0;
+				}
+			}
+			double[] r = getk0Directed(distN, Integer.MAX_VALUE,
+					Integer.MAX_VALUE, Integer.MAX_VALUE);
+			fpN = 1 - r[2]/(2*r[0]-r[1]);
+			//System.out.println(p + " " + fpN + " " + in);
+			if (fpN < in) {
+				return new double[] { p, j - 1 };
+			}
+		}
+		return new double[] { 1, 1 };
+	}
+	
+	public static double[] getCPDirectedMaxDegreeOut(double[][] dist) {
+		double av = 0;
+		int max = 0;
+		for (int i = 0; i < dist.length; i++) {
+			for (int j = 0; j < dist[i].length; j++) {
+				av = av + j * dist[i][j];
+			}
+		}
+		double p = 0;
+		double out = 0;
+		double fpN;
+		double[][] distN = new double[dist.length][];
+		for (int i = 0; i < dist.length; i++){
+			distN[i] = new double[dist[i].length];
+			for (int j = 0; j < dist[i].length; j++){
+				distN[i][j] = dist[i][j];
+			}
+		}
+		for (int i = dist.length-1; i > 0; i--) {
+			out = out + p/av;
+			for (int j = 0; j < dist[i].length; j++) {
+				p = p + dist[i][j];
+					out = out + dist[i][j]/ av;
+					distN[i][j-1] = dist[i][j-1]+distN[i][j];
+					distN[i][j] = 0;
+				
+			}
+			double[] r = getk0Directed(distN, Integer.MAX_VALUE,
+					Integer.MAX_VALUE, Integer.MAX_VALUE);
+			fpN = 1 - r[1]/(2*r[0]-r[0]);
+			//System.out.println(p + " " + fpN + " " + in);
+			if (fpN < out) {
+				return new double[] { p, i - 1 };
 			}
 		}
 		return new double[] { 1, 1 };
