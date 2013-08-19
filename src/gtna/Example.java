@@ -58,16 +58,7 @@ public class Example {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Config.overwrite("MAIN_DATA_FOLDER", "./data/example/");
-		Config.overwrite("MAIN_PLOT_FOLDER", "./plots/example/");
-		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "true");
-
-		Metric[] metrics = new Metric[] { new DegreeDistribution(),
-				new ShortestPaths() };
-		int times = 1;
-
-		er(metrics, times);
-		as(metrics, times);
+		
 	}
 
 	public static void er(Metric[] metrics, int times) {
