@@ -82,10 +82,12 @@ public class CCSorterUpdate extends NodeSorterUpdate {
 		for (int k = 0; k < in.length; k++){
 			if (this.bidirectional){
 			   this.epm = this.epm - 2*degs[in[k]][0]*f+f;
+			   degs[in[k]][0]--;
 			} else {
 				this.epm = this.epm - degs[in[k]][0]*f;
+				degs[in[k]][1]--;
 			}
-			degs[in[k]][1]--;
+			
 		}
 		if (!bidirectional){
 		int[] out = sorted[index].getOutgoingEdges();
@@ -94,7 +96,7 @@ public class CCSorterUpdate extends NodeSorterUpdate {
             degs[out[k]][0]--;
 		}
 		}
-		System.out.println("Actual " + (2*epm-2*ep) + " " + 1/(double)(sorted.length-index)*(2*epm-2*ep) + " epm " + epm + " ep " + ep);
+		System.out.println("Actual " + (2*epm-2*ep) + " " + sorted.length/(double)(sorted.length-index)*(2*epm-2*ep) + " epm " + epm + " ep " + ep);
 		//resort
 		this.setC();
 		for (int i = index+1; i < sorted.length-1; i++){
