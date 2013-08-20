@@ -33,7 +33,7 @@
  * ---------------------------------------
  *
  */
-package gtna.graph.sorting;
+package gtna.transformation.eigenvector;
 
 import gtna.graph.Graph;
 import gtna.graph.GraphProperty;

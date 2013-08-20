@@ -36,9 +36,13 @@
 package gtna;
 
 import gtna.data.Series;
+import gtna.graph.sorting.CCSorterUpdate;
+import gtna.graph.sorting.DegreeNodeSorterUpdate;
+import gtna.graph.sorting.NodeSorter.NodeSorterMode;
 import gtna.metrics.Metric;
 import gtna.metrics.basic.DegreeDistribution;
-import gtna.metrics.basic.ShortestPaths;
+import gtna.metrics.fragmentation.FragmentationRecompute;
+import gtna.metrics.fragmentation.StrongFragmentationRecompute;
 import gtna.networks.Network;
 import gtna.networks.model.ErdosRenyi;
 import gtna.networks.util.DescriptionWrapper;
@@ -60,16 +64,24 @@ public class Example {
 	public static void main(String[] args) {
 		Config.overwrite("MAIN_DATA_FOLDER", "./data/example/");
 		Config.overwrite("MAIN_PLOT_FOLDER", "./plots/example/");
-		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "true");
+		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
 
-		Metric[] metrics = new Metric[] { new DegreeDistribution(),
+		Metric[] metrics = new Metric[] { new DegreeDistribution(), new StrongFragmentationRecompute(
+				new DegreeNodeSorterUpdate(NodeSorterMode.DESC), FragmentationRecompute.Resolution.SINGLE,
+				false),
+				new StrongFragmentationRecompute(
+				new CCSorterUpdate(false), FragmentationRecompute.Resolution.SINGLE,
+				false)
 				 };
 		int times = 1;
 		
-		Network er1 = new ReadableFile("SPI", "SPI","../graphs/spi.txt",null);
+		Network er1 = new ErdosRenyi(105,3,false,null);
 		Series.generate(er1, metrics, times);
 //		er(metrics, times);
 //		as(metrics, times);
+
+		
+
 	}
 
 	public static void er(Metric[] metrics, int times) {

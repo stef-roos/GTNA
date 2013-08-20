@@ -38,6 +38,11 @@ package gtna.id.md;
 import gtna.id.DIdentifier;
 import gtna.id.Identifier;
 import gtna.id.md.MDIdentifierSpaceSimple.DistanceMD;
+<<<<<<< HEAD
+=======
+import gtna.id.plane.PlaneIdentifier;
+import gtna.id.plane.PlaneIdentifierSpaceSimple;
+>>>>>>> 07dfc43c0ae1bea582bdf3ff61ecc030d97731c7
 import gtna.util.MDVector;
 
 import java.util.Random;
@@ -92,6 +97,7 @@ public class MDIdentifier implements DIdentifier, Comparable<MDIdentifier> {
 			throw new RuntimeException(
 					"Cannot compute a distance between MDIntentifiers in spaces with unequal dimensions");
 		}
+<<<<<<< HEAD
 
 		double temp;
 		if (this.idSpace.getDistFunc() == DistanceMD.EUCLIDEAN) {
@@ -111,9 +117,22 @@ public class MDIdentifier implements DIdentifier, Comparable<MDIdentifier> {
 					temp = Math.abs(this.coordinates[i] - to.getCoordinate(i));
 				}
 				squarredResult += Math.pow(temp, 2);
+=======
+		
+		double temp;
+		if (this.idSpace.getDistFunc() == DistanceMD.EUCLIDEAN){
+			double squarredResult = 0;
+		for ( int i = 0; i < this.idSpace.getDimensions(); i++ ) {
+			if ( this.idSpace.isWrapAround() ) {
+				 temp = Math.min(Math.abs(this.coordinates[i]-to.getCoordinate(i)), 
+						 Math.min(this.idSpace.getModulus(i)+this.coordinates[i]-to.getCoordinate(i), this.idSpace.getModulus(i)-this.coordinates[i]+to.getCoordinate(i)));
+			} else {
+				 temp = Math.abs(this.coordinates[i] - to.getCoordinate(i));
+>>>>>>> 07dfc43c0ae1bea582bdf3ff61ecc030d97731c7
 			}
 			return Math.sqrt(squarredResult);
 		}
+<<<<<<< HEAD
 		if (this.idSpace.getDistFunc() == DistanceMD.MANHATTAN) {
 			double result = 0;
 			for (int i = 0; i < this.idSpace.getDimensions(); i++) {
@@ -129,6 +148,18 @@ public class MDIdentifier implements DIdentifier, Comparable<MDIdentifier> {
 											+ to.getCoordinate(i)));
 				} else {
 					temp = Math.abs(this.coordinates[i] - to.getCoordinate(i));
+=======
+		return Math.sqrt(squarredResult);
+		} 
+		if (this.idSpace.getDistFunc() == DistanceMD.MANHATTAN){
+			double result = 0;
+			for ( int i = 0; i < this.idSpace.getDimensions(); i++ ) {
+				if ( this.idSpace.isWrapAround() ) {
+					 temp = Math.min(Math.abs(this.coordinates[i]-to.getCoordinate(i)), 
+							 Math.min(this.idSpace.getModulus(i)+this.coordinates[i]-to.getCoordinate(i), this.idSpace.getModulus(i)-this.coordinates[i]+to.getCoordinate(i)));
+				} else {
+					 temp = Math.abs(this.coordinates[i] - to.getCoordinate(i));
+>>>>>>> 07dfc43c0ae1bea582bdf3ff61ecc030d97731c7
 				}
 				result += temp;
 			}

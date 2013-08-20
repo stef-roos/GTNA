@@ -81,17 +81,21 @@ public class MainFiedler {
 	public static void main(String[] args) {
 		Config.overwrite("GNUPLOT_TERMINAL", "png");
 		Config.overwrite("PLOT_EXTENSION", ".png");
+		
+		Network net = new ReadableFile("KARATE", "KARATE", "../graphs/karate.txt", new Transformation[]
+				{new StoreFiedler()});
+		Series.generate(net, new Metric[0], 1);
 		//int nodes, int degree, int groups, int edges, int times, String folder
 //        CK();
 //        BA(3000,5,10,"");
 //        ER(3000,5,10,"");
-		BA(5000,5,6,"");
-        ER(5000,5,6,"");
-		BANC(3000,5,2,1,10, "BAC/");
-		BANC(3000,5,10,20,10, "BAC/");
-		BANC(5000,5,2,1,10, "BAC");
-		BANC(5000,5,10,20,10, "BAC");
-		CNC(3000,5,2,1,10, "CC/");
+//		BA(5000,5,6,"");
+//        ER(5000,5,6,"");
+//		BANC(3000,5,2,1,10, "BAC/");
+//		BANC(3000,5,10,20,10, "BAC/");
+//		BANC(5000,5,2,1,10, "BAC");
+//		BANC(5000,5,10,20,10, "BAC");
+//		CNC(3000,5,2,1,10, "CC/");
 		
 //		addFiedler("data/BARABASI_ALBERT-3000-5--LARGEST_WEAKLY_CONNECTED_COMPONENT--STOREFIEDLER/", 10);
 //		addFiedler("data/BARABASI_ALBERT-5000-5--LARGEST_WEAKLY_CONNECTED_COMPONENT--STOREFIEDLER/", 6);
