@@ -197,7 +197,7 @@ public abstract class FragmentationRecompute extends Metric {
 			Partition p = this.partition(g, sorted, exclude.clone());
 			
             c[i] = 1/(1-excludeFirst[i]/(double)nodes.length)*this.getC();
-            System.out.println("ci " + c[i]);
+           // System.out.println("ci " + c[i]);
             if (c[i] < 0 && threshold == nodes.length){
             	this.threshold = excludeFirst[i];
             	this.thresholdfraction = excludeFirst[i]/(double)sorted.length;

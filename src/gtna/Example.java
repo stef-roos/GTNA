@@ -45,6 +45,7 @@ import gtna.metrics.fragmentation.FragmentationRecompute;
 import gtna.metrics.fragmentation.StrongFragmentationRecompute;
 import gtna.networks.Network;
 import gtna.networks.model.ErdosRenyi;
+import gtna.networks.model.randomGraphs.PowerLawRandomGraph;
 import gtna.networks.util.DescriptionWrapper;
 import gtna.networks.util.ReadableFile;
 import gtna.plot.Plotting;
@@ -62,10 +63,16 @@ public class Example {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Config.overwrite("MAIN_DATA_FOLDER", "./data/example/");
-		Config.overwrite("MAIN_PLOT_FOLDER", "./plots/example/");
-		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
+		Config.overwrite("MAIN_DATA_FOLDER", "./data/"+args[0]+"/");
+		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "true");
+		int start = Integer.parseInt(args[1]);
+		int end = Integer.parseInt(args[2]);
+		double a1 = Double.parseDouble(args[3]);
+		double a2 = Double.parseDouble(args[4]);
+		int times = Integer.parseInt(args[5]);
 
+		for (int i = start; i <=end; i++){
+			int n = (int)Math.pow(2, i);
 		Metric[] metrics = new Metric[] { new DegreeDistribution(), new StrongFragmentationRecompute(
 				new DegreeNodeSorterUpdate(NodeSorterMode.DESC), FragmentationRecompute.Resolution.SINGLE,
 				false),
@@ -73,10 +80,12 @@ public class Example {
 				new CCSorterUpdate(false), FragmentationRecompute.Resolution.SINGLE,
 				false)
 				 };
-		int times = 1;
 		
-		Network er1 = new ErdosRenyi(105,3,false,null);
-		Series.generate(er1, metrics, times);
+		
+		//Network er1 = new ErdosRenyi(n,deg,false,null);
+		Network net = new PowerLawRandomGraph(n,a1,a2,1,1,n,n,null);
+		Series.generate(net, metrics, times);
+		}
 //		er(metrics, times);
 //		as(metrics, times);
 

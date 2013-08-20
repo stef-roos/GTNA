@@ -70,7 +70,8 @@ public class CCSorterUpdate extends NodeSorterUpdate {
 	 */
 	@Override
 	public Node[] update(boolean[] deleted, int index, Random rand) {
-		int node = sorted[index].getIndex();
+	     int node = sorted[index].getIndex();
+	     //System.out.println("Remove " + node);
 		if (this.bidirectional){
 			this.epm = this.epm - degs[node][0]*degs[node][0]*f;
 			this.ep = this.ep - 2*degs[node][0]*f;
@@ -78,12 +79,16 @@ public class CCSorterUpdate extends NodeSorterUpdate {
 			this.epm = this.epm - degs[node][0]*degs[node][1]*f;
 			this.ep = this.ep - (degs[node][0]+degs[node][1])*f;
 		}
+		degs[node][0] = 0;
+		if (!this.bidirectional) degs[node][1] = 0;
 		int[] in = sorted[index].getIncomingEdges();
 		for (int k = 0; k < in.length; k++){
 			if (this.bidirectional){
+				if (degs[in[k]][0] == 0) continue;
 			   this.epm = this.epm - 2*degs[in[k]][0]*f+f;
 			   degs[in[k]][0]--;
 			} else {
+				if (degs[in[k]][0] == 0 && degs[in[k]][1] == 0) continue;
 				this.epm = this.epm - degs[in[k]][0]*f;
 				degs[in[k]][1]--;
 			}
@@ -92,11 +97,12 @@ public class CCSorterUpdate extends NodeSorterUpdate {
 		if (!bidirectional){
 		int[] out = sorted[index].getOutgoingEdges();
 		for (int k = 0; k < out.length; k++){
+			if (degs[out[k]][0] == 0 && degs[out[k]][1] == 0) continue;
 			this.epm = this.epm - degs[out[k]][1]*f;
             degs[out[k]][0]--;
 		}
 		}
-		System.out.println("Actual " + (2*epm-2*ep) + " " + sorted.length/(double)(sorted.length-index)*(2*epm-2*ep) + " epm " + epm + " ep " + ep);
+		//System.out.println("Actual " + (2*epm-2*ep) + " " + sorted.length/(double)(sorted.length-index-1)*(2*epm-2*ep) + " epm " + epm + " ep " + ep);
 		//resort
 		this.setC();
 		for (int i = index+1; i < sorted.length-1; i++){
@@ -110,7 +116,8 @@ public class CCSorterUpdate extends NodeSorterUpdate {
 				sorted[j-1] = temp;
 			}
 		}
-		System.out.println("Predicted " + c[sorted[index+1].getIndex()]);
+		//System.out.println("Predicted " + c[sorted[index+1].getIndex()]);
+		//System.out.println("--------------------");
 		return sorted;
 	}
 
@@ -140,10 +147,11 @@ public class CCSorterUpdate extends NodeSorterUpdate {
 		}
 		this.epm = this.epm*f;
 		this.ep = this.ep*f;
+		//System.out.println("Start c " + (2*epm-2*ep) + " emp " + this.epm + " ep " + this.ep);
 		this.setC();
 		Arrays.sort(sorted, new CCAsc());
 		this.randomize(sorted, rand);
-		System.out.println("Predicted " + c[sorted[0].getIndex()]);
+		//System.out.println("Predicted " + c[sorted[0].getIndex()]);
 		if (this.mode == NodeSorterMode.DESC) {
 			sorted = this.reverse(sorted);
 		}
@@ -154,6 +162,7 @@ public class CCSorterUpdate extends NodeSorterUpdate {
 		this.c = new double[sorted.length];
 		for (int i = 0; i <c.length; i++){
 			c[i] = getCWithout(i);
+			//System.out.println("C " + i + " " + c[i]);
 		}
 	}
 	
@@ -170,7 +179,9 @@ public class CCSorterUpdate extends NodeSorterUpdate {
 			double eout = this.degs[index][1]*f;
 			double pin = ein/ep;
 			double pout = eout/ep;
+			//System.out.println("e2 " + e2 + " ein " + ein + " eout " + eout + " pin " + pin + " pout " + pout);
 			c = (1-pin)*(1-pout)*(2*epm - e2)-(1-pout)*(ep-ein)-(1-pin)*(ep-eout);
+			//System.out.println("=>c " +c);
 		}
 		return c;
 	}
