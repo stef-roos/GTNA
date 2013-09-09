@@ -37,6 +37,7 @@ package gtna;
 
 import gtna.data.Series;
 import gtna.graph.sorting.CCSorterUpdate;
+import gtna.graph.sorting.CCSorterUpdate.Computation;
 import gtna.graph.sorting.DegreeNodeSorterUpdate;
 import gtna.graph.sorting.NodeSorter.NodeSorterMode;
 import gtna.metrics.Metric;
@@ -77,8 +78,10 @@ public class Example {
 				new DegreeNodeSorterUpdate(NodeSorterMode.DESC), FragmentationRecompute.Resolution.SINGLE,
 				false),
 				new StrongFragmentationRecompute(
-				new CCSorterUpdate(false), FragmentationRecompute.Resolution.SINGLE,
-				false)
+				new CCSorterUpdate(false,Computation.DEGREEBASED), FragmentationRecompute.Resolution.SINGLE,
+				false), new StrongFragmentationRecompute(
+						new CCSorterUpdate(false,Computation.NODEBASED), FragmentationRecompute.Resolution.SINGLE,
+						false)
 				 };
 		
 		

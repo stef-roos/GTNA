@@ -55,14 +55,20 @@ public class CCSorterUpdate extends NodeSorterUpdate {
 	private double f;
 	private Node[] sorted;
 	private double[] c;
+	private Computation computation;
+	
+	public enum Computation{
+		NODEBASED, DEGREEBASED
+	}
 
 	/**
 	 * @param key
 	 * @param mode
 	 */
-	public CCSorterUpdate(boolean bidirectional) {
-		super("CC", NodeSorterMode.ASC);
+	public CCSorterUpdate(boolean bidirectional, Computation computation) {
+		super("CC-"+computation.toString(), NodeSorterMode.ASC);
 		this.bidirectional = bidirectional;
+		this.computation = computation;
 	}
 
 	/* (non-Javadoc)
@@ -168,6 +174,7 @@ public class CCSorterUpdate extends NodeSorterUpdate {
 	
 	private double getCWithout(int index){
 		double c = 0;
+		if (this.computation == Computation.DEGREEBASED){
 		if (this.bidirectional){
 			double e2 = this.degs[index][0]*this.degs[index][0]*f;
 			double e1 = this.degs[index][0]*f;
@@ -182,6 +189,37 @@ public class CCSorterUpdate extends NodeSorterUpdate {
 			//System.out.println("e2 " + e2 + " ein " + ein + " eout " + eout + " pin " + pin + " pout " + pout);
 			c = (1-pin)*(1-pout)*(2*epm - e2)-(1-pout)*(ep-ein)-(1-pin)*(ep-eout);
 			//System.out.println("=>c " +c);
+		}
+		}
+		if (this.computation == Computation.NODEBASED){
+			double e2 = this.epm;
+			double e1 = this.ep;
+			if (this.bidirectional){
+				e2 = e2 - degs[index][0]*degs[index][0]*f;
+				e1 = e1 - 2*degs[index][0]*f;
+			} else {
+				e2 = e2 - degs[index][0]*degs[index][1]*f;
+				e1 = e1 - (degs[index][0]+degs[index][1])*f;
+			}
+			int[] in = sorted[index].getIncomingEdges();
+			for (int k = 0; k < in.length; k++){
+				if (this.bidirectional){
+					if (degs[in[k]][0] == 0) continue;
+				   e2 = e2 - 2*degs[in[k]][0]*f+f;
+				} else {
+					if (degs[in[k]][0] == 0 && degs[in[k]][1] == 0) continue;
+					e2 = e2 - degs[in[k]][0]*f;
+				}
+				
+			}
+			if (!bidirectional){
+			int[] out = sorted[index].getOutgoingEdges();
+			for (int k = 0; k < out.length; k++){
+				if (degs[out[k]][0] == 0 && degs[out[k]][1] == 0) continue;
+				e2 = e2 - degs[out[k]][1]*f;
+			}
+			}
+			c= 2*(e2-e1);
 		}
 		return c;
 	}
