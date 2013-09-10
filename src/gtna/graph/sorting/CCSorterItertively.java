@@ -147,8 +147,37 @@ public class CCSorterItertively extends NodeSorter {
 				}
 			}
 			double[][] degDist = new double[maxIn+1][maxOut+1];
-			
-			
+			for (int i = 0; i < degs.length; i++){
+				degDist[degs[i][0]][degs[i][1]]++;
+			}
+			for (int i = 0; i < degDist.length; i++){
+				for (int j = 0; j < degDist[i].length; j++){
+					degDist[i][j] = degDist[i][j]*f;
+				}
+			}
+			double[][] pkjIn = new double[degDist.length][degDist[0].length];
+			double[][] pkjOut = new double[degDist.length][degDist[0].length];
+			for (int i = 0; i < nodes.length; i++){
+				int minindex = -1;
+				double min = Double.MAX_VALUE;
+				for (int j = 0; j < nodes.length; j++){
+					if (!removed[j]){
+						int[] neighs = nodes[j].getIncomingEdges();
+						for (int s = 0; s < neighs.length; s++){
+							pkjIn[nodes[neighs[s]].getInDegree()][nodes[neighs[s]].getOutDegree()] = 
+									pkjIn[nodes[neighs[s]].getInDegree()][nodes[neighs[s]].getOutDegree()]+f;
+						}
+						neighs = nodes[j].getOutgoingEdges();
+						for (int s = 0; s < neighs.length; s++){
+							pkjOut[nodes[neighs[s]].getInDegree()][nodes[neighs[s]].getOutDegree()] = 
+									pkjIn[nodes[neighs[s]].getInDegree()][nodes[neighs[s]].getOutDegree()]+f;
+						}
+						degDist[nodes[j].getInDegree()][nodes[j].getOutDegree()]= 
+								degDist[nodes[j].getInDegree()][nodes[j].getOutDegree()]-f;
+						double d = 0;
+					}
+				}
+			}
 		}	
 		}
 		return sorted;
