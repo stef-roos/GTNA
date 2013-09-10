@@ -59,14 +59,20 @@ public class CCSorterItertively extends NodeSorter {
 	private double[] c;
 	private double epm;
 	private double ep;
+	private Computation computation;
+	
+	public enum Computation{
+		NODEBASED, DEGREEBASED
+	}
 
 	/**
 	 * @param key
 	 * @param mode
 	 */
-	public CCSorterItertively(boolean bidirectional) {
-		super("CC", NodeSorterMode.ASC);
+	public CCSorterItertively(boolean bidirectional, Computation computation) {
+		super("CC-"+computation.toString(), NodeSorterMode.ASC);
 		this.bidirectional = bidirectional;
+		this.computation = computation;
 	}
 
 	
@@ -97,11 +103,15 @@ public class CCSorterItertively extends NodeSorter {
 		}
 		this.epm = this.epm*f;
 		this.ep = this.ep*f;
+		if (this.bidirectional){
+			
+		}else {
 		c1 = 1;
 		c2 = 1;
 		c3 = epm-ep;
 		Node[] nodes = g.getNodes();
 		boolean[] removed = new boolean[nodes.length];
+		if (this.computation == Computation.DEGREEBASED){
 		for (int i = 0; i < nodes.length; i++){
 			double min = c1*c2*c3;
 			int minindex = -1;
@@ -114,15 +124,33 @@ public class CCSorterItertively extends NodeSorter {
 						min = x;
 						minindex = j;
 					}
+					} 
 				}
-			}
+			
 			removed[minindex]=true;
 			sorted[i] = nodes[minindex];
 			c1 = c1-degs[minindex][0]/ep*f;
 			c2 = c2-degs[minindex][1]/ep*f;
 			c3 = c3-degs[minindex][0]*degs[minindex][1]*f;
+			
 		}
-		
+		}
+	 else {
+			int maxOut = 0;
+			int maxIn = 0;
+			for (int i = 0; i < degs.length; i++){
+				if (degs[i][0] >maxIn){
+					maxIn = degs[i][0];
+				} 
+				if (degs[i][1] >maxOut){
+					maxOut = degs[i][1];
+				}
+			}
+			double[][] degDist = new double[maxIn+1][maxOut+1];
+			
+			
+		}	
+		}
 		return sorted;
 	}
 	

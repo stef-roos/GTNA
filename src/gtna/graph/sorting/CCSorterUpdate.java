@@ -66,7 +66,7 @@ public class CCSorterUpdate extends NodeSorterUpdate {
 	 * @param mode
 	 */
 	public CCSorterUpdate(boolean bidirectional, Computation computation) {
-		super("CC-"+computation.toString(), NodeSorterMode.ASC);
+		super("CC-UPDATE-"+computation.toString(), NodeSorterMode.ASC);
 		this.bidirectional = bidirectional;
 		this.computation = computation;
 	}
