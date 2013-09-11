@@ -82,6 +82,8 @@ public class CCSorterItertively extends NodeSorter {
 	 */
 	@Override
 	public Node[] sort(Graph g, Random rand) {
+		Node[] nodes = g.getNodes();
+		nodes = (new RandomNodeSorter()).sort(g, rand);
 		this.sorted = this.clone(g.getNodes());
 		if (this.bidirectional){
 		this.degs = new int[sorted.length][1];
@@ -90,9 +92,9 @@ public class CCSorterItertively extends NodeSorter {
 		}
 		f = 1/(double)this.degs.length;
 		for (int i = 0; i < degs.length; i++){
-			degs[i][0] = sorted[i].getInDegree();
+			degs[i][0] = nodes[i].getInDegree();
 			if (!this.bidirectional){
-				degs[i][1] = sorted[i].getOutDegree();
+				degs[i][1] = nodes[i].getOutDegree();
 			}
 			if (this.bidirectional){
 			   this.epm = this.epm +degs[i][0]*degs[i][0];
@@ -121,7 +123,7 @@ public class CCSorterItertively extends NodeSorter {
 					degDist[k] = degDist[k]*f;
 				}
 				double[] pk = new double[degDist.length];
-				Node[] nodes = g.getNodes();
+				
 				boolean[] removed = new boolean[nodes.length];
 				for (int i = 0; i < nodes.length; i++){
 					int minindex = -1;
@@ -167,7 +169,6 @@ public class CCSorterItertively extends NodeSorter {
 		c1 = 1;
 		c2 = 1;
 		c3 = epm-ep;
-		Node[] nodes = g.getNodes();
 		boolean[] removed = new boolean[nodes.length];
 		if (this.computation == Computation.DEGREEBASED){
 		for (int i = 0; i < nodes.length; i++){
@@ -270,6 +271,7 @@ public class CCSorterItertively extends NodeSorter {
 								degDist[nodes[j].getInDegree()][nodes[j].getOutDegree()]+f;
 					}
 				}
+
 				removed[minindex] = true;
 				sorted[i] = nodes[minindex];
 				int[] neighs = nodes[minindex].getIncomingEdges();

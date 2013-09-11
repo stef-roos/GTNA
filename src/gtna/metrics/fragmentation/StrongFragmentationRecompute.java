@@ -38,7 +38,7 @@ package gtna.metrics.fragmentation;
 import gtna.graph.Graph;
 import gtna.graph.Node;
 import gtna.graph.partition.Partition;
-import gtna.graph.sorting.NodeSorterUpdate;
+import gtna.graph.sorting.NodeSorter;
 import gtna.transformation.partition.StrongConnectivityPartition;
 
 /**
@@ -47,7 +47,7 @@ import gtna.transformation.partition.StrongConnectivityPartition;
  */
 public class StrongFragmentationRecompute extends FragmentationRecompute {
 
-	public StrongFragmentationRecompute(NodeSorterUpdate sorter, Resolution resolution, boolean bi) {
+	public StrongFragmentationRecompute(NodeSorter sorter, Resolution resolution, boolean bi) {
 		super(FragmentationRecompute.Type.STRONG, sorter, resolution,bi);
 	}
 

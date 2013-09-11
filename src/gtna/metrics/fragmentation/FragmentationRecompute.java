@@ -57,7 +57,7 @@ import java.util.Random;
  * 
  */
 public abstract class FragmentationRecompute extends Metric {
-	protected NodeSorterUpdate sorter;
+	protected NodeSorter sorter;
 
 	protected Resolution resolution;
 	protected boolean bidirectional;
@@ -70,7 +70,7 @@ public abstract class FragmentationRecompute extends Metric {
 		SINGLE, PERCENT
 	};
 
-	public FragmentationRecompute(Type type, NodeSorterUpdate sorter,
+	public FragmentationRecompute(Type type, NodeSorter sorter,
 			Resolution resolution, boolean bidirectional) {
 		super("FRAGMENTATION", new Parameter[] {
 				new StringParameter("TYPE", type.toString()),
@@ -353,7 +353,8 @@ public abstract class FragmentationRecompute extends Metric {
 							+ 1 / (double) sorted.length;
 				}
 			}
-			sorted = this.sorter.update(exclude, i, rand);
+			if (this.sorter instanceof NodeSorterUpdate)
+			sorted = ((NodeSorterUpdate) this.sorter).update(exclude, i, rand);
 		}
 		return exclude;
 	}
