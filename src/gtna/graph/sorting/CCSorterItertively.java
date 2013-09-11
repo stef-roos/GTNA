@@ -104,7 +104,65 @@ public class CCSorterItertively extends NodeSorter {
 		this.epm = this.epm*f;
 		this.ep = this.ep*f;
 		if (this.bidirectional){
-			
+			if (this.computation == Computation.DEGREEBASED){
+				this.sorted = (new DegreeNodeSorter(NodeSorter.NodeSorterMode.DESC)).sort(g, rand);
+			} else {
+				int max = 0;
+				for (int i = 0; i < degs.length; i++){
+					if (degs[i][0] > max){
+						max = degs[i][0];
+					}
+				}
+				double[] degDist = new double[max+1];
+				for (int i = 0; i < degs.length; i++){
+						degDist[degs[i][0]]++;
+				}
+				for (int k = 0; k < degDist.length; k++){
+					degDist[k] = degDist[k]*f;
+				}
+				double[] pk = new double[degDist.length];
+				Node[] nodes = g.getNodes();
+				boolean[] removed = new boolean[nodes.length];
+				for (int i = 0; i < nodes.length; i++){
+					int minindex = -1;
+					double min = Double.MAX_VALUE;
+					for (int j = 0; j < nodes.length; j++){
+						if (!removed[j]){
+							degDist[degs[j][0]] = degDist[degs[j][0]]-f;
+							int[] neighs = nodes[j].getIncomingEdges();
+							for (int s = 0; s < neighs.length; s++){
+								pk[nodes[neighs[s]].getInDegree()] = pk[nodes[neighs[s]].getInDegree()]+f;
+							}
+							double[] degN = new double[degDist.length];
+							for (int k = 0; k < degDist.length; k++){
+								for (int l = k; l < degDist.length; l++){
+									degN[k] = degN[k] + binom(l,k)*Math.pow(1-pk[l], k)*Math.pow(pk[l], l-k);
+								}
+							}
+							double d = 0;
+							for (int k = 0; k < degDist.length; k++){
+								d = d + k*(k-2)*degN[k];
+								
+							}
+							if (d < min){
+								min = d;
+								minindex = j;
+							}
+							degDist[degs[j][0]] = degDist[degs[j][0]]+f;
+							for (int s = 0; s < neighs.length; s++){
+								pk[nodes[neighs[s]].getInDegree()] = pk[nodes[neighs[s]].getInDegree()]-f;
+							}
+						}
+					}
+					sorted[i] = nodes[minindex];
+					removed[minindex] = true;
+					degDist[degs[minindex][0]] = degDist[degs[minindex][0]]-f;
+					int[] neighs = nodes[minindex].getIncomingEdges();
+					for (int s = 0; s < neighs.length; s++){
+						pk[nodes[neighs[s]].getInDegree()] = pk[nodes[neighs[s]].getInDegree()]+f;
+					}
+				}
+			}
 		}else {
 		c1 = 1;
 		c2 = 1;
@@ -157,6 +215,7 @@ public class CCSorterItertively extends NodeSorter {
 			}
 			double[][] pkjIn = new double[degDist.length][degDist[0].length];
 			double[][] pkjOut = new double[degDist.length][degDist[0].length];
+			double[][] degN = new double[degDist.length][degDist[0].length];
 			for (int i = 0; i < nodes.length; i++){
 				int minindex = -1;
 				double min = Double.MAX_VALUE;
@@ -170,19 +229,86 @@ public class CCSorterItertively extends NodeSorter {
 						neighs = nodes[j].getOutgoingEdges();
 						for (int s = 0; s < neighs.length; s++){
 							pkjOut[nodes[neighs[s]].getInDegree()][nodes[neighs[s]].getOutDegree()] = 
-									pkjIn[nodes[neighs[s]].getInDegree()][nodes[neighs[s]].getOutDegree()]+f;
+									pkjOut[nodes[neighs[s]].getInDegree()][nodes[neighs[s]].getOutDegree()]+f;
 						}
 						degDist[nodes[j].getInDegree()][nodes[j].getOutDegree()]= 
 								degDist[nodes[j].getInDegree()][nodes[j].getOutDegree()]-f;
 						double d = 0;
+						for (int k = 0; k < degN.length; k++){
+							for (int m = k; m < degN.length; m++){
+								for (int l = 0; l < degN[0].length; l++){
+								    for (int n = l; n < degN[0].length; n++){
+										degN[k][l] = degN[k][l] + binom(m,k)*
+												Math.pow(1-pkjOut[m][n], k)*Math.pow(pkjOut[m][n], m-k)*
+												binom(n,l)*
+												Math.pow(1-pkjIn[m][n], l)*Math.pow(pkjIn[m][n], n-l)*
+												degDist[m][n];
+									}
+								}
+							}
+						}
+						for (int k = 0; k < degN.length; k++){
+							for (int l = 0; l < degN[0].length; l++){
+								d = d + (2*k*l-k-l)*degN[k][l];
+							}
+						}
+						if (d < min){
+							min = d;
+							minindex = j;
+						}
+						neighs = nodes[j].getIncomingEdges();
+						for (int s = 0; s < neighs.length; s++){
+							pkjIn[nodes[neighs[s]].getInDegree()][nodes[neighs[s]].getOutDegree()] = 
+									pkjIn[nodes[neighs[s]].getInDegree()][nodes[neighs[s]].getOutDegree()]-f;
+						}
+						neighs = nodes[j].getOutgoingEdges();
+						for (int s = 0; s < neighs.length; s++){
+							pkjOut[nodes[neighs[s]].getInDegree()][nodes[neighs[s]].getOutDegree()] = 
+									pkjOut[nodes[neighs[s]].getInDegree()][nodes[neighs[s]].getOutDegree()]-f;
+						}
+						degDist[nodes[j].getInDegree()][nodes[j].getOutDegree()]= 
+								degDist[nodes[j].getInDegree()][nodes[j].getOutDegree()]+f;
 					}
 				}
+				removed[minindex] = true;
+				sorted[i] = nodes[minindex];
+				int[] neighs = nodes[minindex].getIncomingEdges();
+				for (int s = 0; s < neighs.length; s++){
+					pkjIn[nodes[neighs[s]].getInDegree()][nodes[neighs[s]].getOutDegree()] = 
+							pkjIn[nodes[neighs[s]].getInDegree()][nodes[neighs[s]].getOutDegree()]+f;
+				}
+				neighs = nodes[minindex].getOutgoingEdges();
+				for (int s = 0; s < neighs.length; s++){
+					pkjOut[nodes[neighs[s]].getInDegree()][nodes[neighs[s]].getOutDegree()] = 
+							pkjOut[nodes[neighs[s]].getInDegree()][nodes[neighs[s]].getOutDegree()]+f;
+				}
+				degDist[nodes[minindex].getInDegree()][nodes[minindex].getOutDegree()]= 
+						degDist[nodes[minindex].getInDegree()][nodes[minindex].getOutDegree()]-f;
 			}
 		}	
 		}
 		return sorted;
 	}
 	
+	/**
+	   * Computes the binomial coefficient "n over k".
+	   * 
+	   * @param n
+	   * @param k
+	   * @return the binomial coefficient
+	   */
+	  public static long binom(int n, final int k) {
+	    final int min = (k < n - k ? k : n - k);
+	    long bin = 1;
+	    for (int i = 1; i <= min; i++) {
+	      bin *= n;
+	      // geht immer genau, da n * (n-1) * ... immer durch das
+	      // entsprechende i teilbar ist
+	      bin /= i;
+	      n--;
+	    }
+	    return bin;
+	  }
 
 	
 	private class CCAsc implements Comparator<Node> {
