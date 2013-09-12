@@ -57,7 +57,7 @@ public class DegreeNodeSorterUpdate extends NodeSorterUpdate{
 	 * @param mode
 	 */
 	public DegreeNodeSorterUpdate(NodeSorterMode mode) {
-		super("DEGREE", mode);
+		super("DEGREE-UPDATE", mode);
 	}
 
 	/* (non-Javadoc)

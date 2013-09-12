@@ -152,6 +152,7 @@ this.randomize(sorted, rand);
 if (this.mode == NodeSorterMode.DESC) {
 sorted = this.reverse(sorted);
 }
+
 return sorted;
 }
 

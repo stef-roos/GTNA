@@ -67,6 +67,7 @@ public class ClosenessCentralityNSUpdate extends NodeSorterUpdate{
 	 */
 	@Override
 	public Node[] update(boolean[] deleted, int index, Random rand) {
+		
 		this.calculate(g, deleted);
 		Node[] sorted = this.clone(g.getNodes());
 		Arrays.sort(sorted, new CentralityAsc());
@@ -100,21 +101,25 @@ public class ClosenessCentralityNSUpdate extends NodeSorterUpdate{
 	*
 	*/
 	private void calculate(Graph g, boolean[] removed) {
+		map = new HashMap<Node, Double>();
 	GraphSPAllFloyd floyd = new GraphSPAllFloyd(g,removed);
 	for (int i = 0; i < g.getNodes().length; i++) {
 		
 	double sum = 0;
 	if (!removed[i]){
+	
 	for (int j = 0; j < g.getNodes().length; j++) {
+		if (removed[j]) continue;
 	if (floyd.dist(i, j) < floyd.INF) {
 	sum += floyd.dist(i, j);
 	}
 	}
 		} else {
-			sum = 1;
+			sum = 0;
 		}
 	map.put(g.getNode(i), 1.0 / sum);
 	}
+
 	}
 
 	private class CentralityAsc implements Comparator<Node> {

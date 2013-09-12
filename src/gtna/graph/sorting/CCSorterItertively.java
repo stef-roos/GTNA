@@ -135,15 +135,9 @@ public class CCSorterItertively extends NodeSorter {
 							for (int s = 0; s < neighs.length; s++){
 								pk[nodes[neighs[s]].getInDegree()] = pk[nodes[neighs[s]].getInDegree()]+f;
 							}
-							double[] degN = new double[degDist.length];
-							for (int k = 0; k < degDist.length; k++){
-								for (int l = k; l < degDist.length; l++){
-									degN[k] = degN[k] + binom(l,k)*Math.pow(1-pk[l], k)*Math.pow(pk[l], l-k);
-								}
-							}
 							double d = 0;
 							for (int k = 0; k < degDist.length; k++){
-								d = d + k*(k-2)*degN[k];
+								d = d + (k*(k-1)*(1-pk[k])*(1-pk[k])-(1-pk[k])*k)*degDist[k];
 								
 							}
 							if (d < min){
@@ -216,7 +210,6 @@ public class CCSorterItertively extends NodeSorter {
 			}
 			double[][] pkjIn = new double[degDist.length][degDist[0].length];
 			double[][] pkjOut = new double[degDist.length][degDist[0].length];
-			double[][] degN = new double[degDist.length][degDist[0].length];
 			for (int i = 0; i < nodes.length; i++){
 				int minindex = -1;
 				double min = Double.MAX_VALUE;
@@ -235,23 +228,10 @@ public class CCSorterItertively extends NodeSorter {
 						degDist[nodes[j].getInDegree()][nodes[j].getOutDegree()]= 
 								degDist[nodes[j].getInDegree()][nodes[j].getOutDegree()]-f;
 						double d = 0;
-						for (int k = 0; k < degN.length; k++){
-							for (int m = k; m < degN.length; m++){
-								for (int l = 0; l < degN[0].length; l++){
-								    for (int n = l; n < degN[0].length; n++){
-										degN[k][l] = degN[k][l] + binom(m,k)*
-												Math.pow(1-pkjOut[m][n], k)*Math.pow(pkjOut[m][n], m-k)*
-												binom(n,l)*
-												Math.pow(1-pkjIn[m][n], l)*Math.pow(pkjIn[m][n], n-l)*
-												degDist[m][n];
-									}
+						for (int k = 0; k < degDist.length; k++){
+							for (int l = 0; l < degDist[0].length; l++){
+								    d = d + (2*k*l*(1-pkjIn[k][l])*(1-pkjOut[k][l])-k*(1-pkjOut[k][l])-l*(1-pkjIn[k][l]));
 								}
-							}
-						}
-						for (int k = 0; k < degN.length; k++){
-							for (int l = 0; l < degN[0].length; l++){
-								d = d + (2*k*l-k-l)*degN[k][l];
-							}
 						}
 						if (d < min){
 							min = d;
@@ -341,7 +321,7 @@ public class CCSorterItertively extends NodeSorter {
 	 */
 	@Override
 	protected boolean isPropertyEqual(Node n1, Node n2) {
-		return false;
+		return this.c[n1.getIndex()] == this.c[n2.getIndex()];
 	}
 
 }

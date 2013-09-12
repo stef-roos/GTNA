@@ -55,7 +55,7 @@ public class CCSorterGreedy extends NodeSorter {
 	}
 	
 		public CCSorterGreedy(boolean bidirectional, Computation computation) {
-			super("CC-GREEDY"+computation.toString(), NodeSorterMode.ASC);
+			super("CC-GREEDY-"+computation.toString(), NodeSorterMode.ASC);
 			this.bidirectional = bidirectional;
 			this.computation = computation;
 		}
@@ -74,9 +74,6 @@ public class CCSorterGreedy extends NodeSorter {
 			Node[] sorted = this.clone(g.getNodes());
 			Arrays.sort(sorted, new ConnectivityAsc());
 			this.randomize(sorted, rand);
-			if (this.mode == NodeSorterMode.DESC) {
-				sorted = this.reverse(sorted);
-			}
 			return sorted;
 		}
 		
@@ -205,7 +202,7 @@ public class CCSorterGreedy extends NodeSorter {
 
 		private class ConnectivityAsc implements Comparator<Node> {
 			public int compare(Node n1, Node n2) {
-				double c = coc[n1.getIndex()] - coc[n2.getInDegree()];
+				double c = coc[n1.getIndex()] - coc[n2.getIndex()];
 				if (c == 0){
 				  return 0;
 				} else {
@@ -220,7 +217,7 @@ public class CCSorterGreedy extends NodeSorter {
 
 		@Override
 		protected boolean isPropertyEqual(Node n1, Node n2) {
-			return n1.getDegree() == n2.getDegree();
+			return coc[n1.getIndex()] == coc[n2.getIndex()];
 		}
 
 }

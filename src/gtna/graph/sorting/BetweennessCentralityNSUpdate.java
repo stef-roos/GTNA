@@ -65,7 +65,7 @@ public class BetweennessCentralityNSUpdate extends NodeSorterUpdate{
 	 * @param mode
 	 */
 	public BetweennessCentralityNSUpdate() {
-		super("BETWEENNESS", NodeSorter.NodeSorterMode.DESC);
+		super("BETWEENNESS-UPDATE", NodeSorter.NodeSorterMode.DESC);
 		// TODO Auto-generated constructor stub
 	}
 

@@ -252,7 +252,7 @@ public class CCSorterUpdate extends NodeSorterUpdate {
 	 */
 	@Override
 	protected boolean isPropertyEqual(Node n1, Node n2) {
-		return false;
+		return this.c[n1.getIndex()] == this.c[n2.getIndex()];
 	}
 
 }

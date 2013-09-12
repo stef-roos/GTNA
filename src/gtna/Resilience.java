@@ -47,15 +47,20 @@ import gtna.graph.sorting.CentralityNodeSorter;
 import gtna.graph.sorting.CentralityNodeSorter.CentralityMode;
 import gtna.graph.sorting.ClosenessCentralityNSUpdate;
 import gtna.graph.sorting.ClosenessCentralityNodeSorter;
+import gtna.graph.sorting.ConnectivityNSUpdate;
+import gtna.graph.sorting.ConnectivityNodeSorter;
 import gtna.graph.sorting.DegreeNodeSorter;
 import gtna.graph.sorting.DegreeNodeSorterUpdate;
 import gtna.graph.sorting.EigenvectorCentralityNSUpdate;
 import gtna.graph.sorting.EigenvectorCentralityNodeSorter;
 import gtna.graph.sorting.NodeSorter.NodeSorterMode;
+import gtna.graph.sorting.RandomNodeSorter;
 import gtna.metrics.Metric;
+import gtna.metrics.fragmentation.Fragmentation;
 import gtna.metrics.fragmentation.FragmentationRecompute;
 import gtna.metrics.fragmentation.StrongFragmentationRecompute;
 import gtna.networks.Network;
+import gtna.networks.model.ErdosRenyi;
 import gtna.networks.model.randomGraphs.PowerLawRandomGraph;
 import gtna.util.Config;
 
@@ -68,40 +73,170 @@ import java.util.Random;
 public class Resilience {
 	
 	public static void main(String[] args){
-		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
-		int n = 100;
-		Network net = new PowerLawRandomGraph(n,2.3,0.0,1,1,n,n,null);
-		Metric[] m = new Metric[]{
-				new StrongFragmentationRecompute(new BetweennessCentralityNSUpdate(), 
-						FragmentationRecompute.Resolution.SINGLE, false),
-				new StrongFragmentationRecompute(new CCSorterGreedy(false,CCSorterGreedy.Computation.DEGREEBASED), 
-								FragmentationRecompute.Resolution.SINGLE, false),
-				new StrongFragmentationRecompute(new CCSorterGreedy(false,CCSorterGreedy.Computation.NODEBASED), 
-				FragmentationRecompute.Resolution.SINGLE, false),
-				new StrongFragmentationRecompute(new CCSorterItertively(false,CCSorterItertively.Computation.DEGREEBASED), 
-						FragmentationRecompute.Resolution.SINGLE, false),
-				new StrongFragmentationRecompute(new CCSorterItertively(false,CCSorterItertively.Computation.NODEBASED), 
-								FragmentationRecompute.Resolution.SINGLE, false),
-				new StrongFragmentationRecompute(new CCSorterUpdate(false,CCSorterUpdate.Computation.DEGREEBASED), 
-										FragmentationRecompute.Resolution.SINGLE, false),
-				new StrongFragmentationRecompute(new CCSorterUpdate(false,CCSorterUpdate.Computation.NODEBASED), 
-												FragmentationRecompute.Resolution.SINGLE, false),
-				new StrongFragmentationRecompute(new CentralityNodeSorter(CentralityMode.BETWEENNESS,NodeSorterMode.DESC), 
-														FragmentationRecompute.Resolution.SINGLE, false),
-				new StrongFragmentationRecompute(new ClosenessCentralityNodeSorter(NodeSorterMode.DESC), 
-																FragmentationRecompute.Resolution.SINGLE, false),
-				new StrongFragmentationRecompute(new ClosenessCentralityNSUpdate(), 
-																		FragmentationRecompute.Resolution.SINGLE, false),
-				new StrongFragmentationRecompute(new DegreeNodeSorter(NodeSorterMode.DESC),FragmentationRecompute.Resolution.SINGLE, false),
-				new StrongFragmentationRecompute(new DegreeNodeSorterUpdate(NodeSorterMode.DESC), FragmentationRecompute.Resolution.SINGLE, false),
-				new StrongFragmentationRecompute(new EigenvectorCentralityNodeSorter(NodeSorterMode.DESC), 
-						FragmentationRecompute.Resolution.SINGLE, false),
-						new StrongFragmentationRecompute(new EigenvectorCentralityNSUpdate(), 
-								FragmentationRecompute.Resolution.SINGLE, false)}; 
-		Series.generate(net, m, 1);
+		int mode = Integer.parseInt(args[0]);
+		int n = Integer.parseInt(args[1]);
+		int times = Integer.parseInt(args[2]);
+		double d = Double.parseDouble(args[3]);
+		switch (mode){
+		case 1: ERU(n,d,times); break;
+		case 2: ERD(n,d,times); break;
+		case 3: PLU(n,d,times); break;
+		case 4: double a2 = Integer.parseInt(args[4]);
+		        PLD(n,d,a2,times);
+		}
+		
 		
 //		Graph g = net.generate();
 //		printCCNonIterative(g);
+	}
+	
+	public static void ERU(int n, double d, int times){
+		Network net = new ErdosRenyi(n,d,true,null);
+		Metric[] m = new Metric[]{
+		new StrongFragmentationRecompute(new BetweennessCentralityNSUpdate(), 
+				FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new CCSorterGreedy(true,CCSorterGreedy.Computation.DEGREEBASED), 
+						FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new CCSorterGreedy(true,CCSorterGreedy.Computation.NODEBASED), 
+		FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new CCSorterItertively(true,CCSorterItertively.Computation.DEGREEBASED), 
+				FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new CCSorterItertively(true,CCSorterItertively.Computation.NODEBASED), 
+						FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new CCSorterUpdate(true,CCSorterUpdate.Computation.DEGREEBASED), 
+								FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new CCSorterUpdate(true,CCSorterUpdate.Computation.NODEBASED), 
+										FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new CentralityNodeSorter(CentralityMode.BETWEENNESS,NodeSorterMode.DESC), 
+												FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new ClosenessCentralityNodeSorter(NodeSorterMode.DESC), 
+														FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new ClosenessCentralityNSUpdate(), 
+																FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new DegreeNodeSorter(NodeSorterMode.DESC),FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new DegreeNodeSorterUpdate(NodeSorterMode.DESC), FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new EigenvectorCentralityNodeSorter(NodeSorterMode.DESC), 
+				FragmentationRecompute.Resolution.SINGLE, true),
+				new StrongFragmentationRecompute(new EigenvectorCentralityNSUpdate(), 
+						FragmentationRecompute.Resolution.SINGLE, true),
+						new StrongFragmentationRecompute(new ConnectivityNodeSorter(Fragmentation.Type.WEAK), 
+								FragmentationRecompute.Resolution.SINGLE, true),
+								new StrongFragmentationRecompute(new ConnectivityNSUpdate(Fragmentation.Type.WEAK), 
+										FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new RandomNodeSorter(), 
+				FragmentationRecompute.Resolution.SINGLE, true)}; 
+		Series.generate(net, m, times);
+	}
+	
+	public static void PLU(int n, double alpha, int times){
+		Network net = new PowerLawRandomGraph(n,alpha,1,n,true,null);
+		Metric[] m = new Metric[]{
+		new StrongFragmentationRecompute(new BetweennessCentralityNSUpdate(), 
+				FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new CCSorterGreedy(true,CCSorterGreedy.Computation.DEGREEBASED), 
+						FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new CCSorterGreedy(true,CCSorterGreedy.Computation.NODEBASED), 
+		FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new CCSorterItertively(true,CCSorterItertively.Computation.DEGREEBASED), 
+				FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new CCSorterItertively(true,CCSorterItertively.Computation.NODEBASED), 
+						FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new CCSorterUpdate(true,CCSorterUpdate.Computation.DEGREEBASED), 
+								FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new CCSorterUpdate(true,CCSorterUpdate.Computation.NODEBASED), 
+										FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new CentralityNodeSorter(CentralityMode.BETWEENNESS,NodeSorterMode.DESC), 
+												FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new ClosenessCentralityNodeSorter(NodeSorterMode.DESC), 
+														FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new ClosenessCentralityNSUpdate(), 
+																FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new DegreeNodeSorter(NodeSorterMode.DESC),FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new DegreeNodeSorterUpdate(NodeSorterMode.DESC), FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new EigenvectorCentralityNodeSorter(NodeSorterMode.DESC), 
+				FragmentationRecompute.Resolution.SINGLE, true),
+				new StrongFragmentationRecompute(new EigenvectorCentralityNSUpdate(), 
+						FragmentationRecompute.Resolution.SINGLE, true),new StrongFragmentationRecompute(new ConnectivityNodeSorter(Fragmentation.Type.WEAK), 
+								FragmentationRecompute.Resolution.SINGLE, true),
+								new StrongFragmentationRecompute(new ConnectivityNSUpdate(Fragmentation.Type.WEAK), 
+										FragmentationRecompute.Resolution.SINGLE, true),
+		new StrongFragmentationRecompute(new RandomNodeSorter(), 
+				FragmentationRecompute.Resolution.SINGLE, true)}; 
+		Series.generate(net, m, times);
+	}
+	
+	public static void ERD(int n, double d, int times){
+		Network net = new ErdosRenyi(n,d,false,null);
+		Metric[] m = new Metric[]{
+		new StrongFragmentationRecompute(new BetweennessCentralityNSUpdate(), 
+				FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new CCSorterGreedy(false,CCSorterGreedy.Computation.DEGREEBASED), 
+						FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new CCSorterGreedy(false,CCSorterGreedy.Computation.NODEBASED), 
+		FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new CCSorterItertively(false,CCSorterItertively.Computation.DEGREEBASED), 
+				FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new CCSorterItertively(false,CCSorterItertively.Computation.NODEBASED), 
+						FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new CCSorterUpdate(false,CCSorterUpdate.Computation.DEGREEBASED), 
+								FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new CCSorterUpdate(false,CCSorterUpdate.Computation.NODEBASED), 
+										FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new CentralityNodeSorter(CentralityMode.BETWEENNESS,NodeSorterMode.DESC), 
+												FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new ClosenessCentralityNodeSorter(NodeSorterMode.DESC), 
+														FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new ClosenessCentralityNSUpdate(), 
+																FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new DegreeNodeSorter(NodeSorterMode.DESC),FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new DegreeNodeSorterUpdate(NodeSorterMode.DESC), FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new EigenvectorCentralityNodeSorter(NodeSorterMode.DESC), 
+				FragmentationRecompute.Resolution.SINGLE, false),
+				new StrongFragmentationRecompute(new EigenvectorCentralityNSUpdate(), 
+						FragmentationRecompute.Resolution.SINGLE, false), new StrongFragmentationRecompute(new ConnectivityNodeSorter(Fragmentation.Type.WEAK), 
+								FragmentationRecompute.Resolution.SINGLE, false),
+								new StrongFragmentationRecompute(new ConnectivityNSUpdate(Fragmentation.Type.WEAK), 
+										FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new RandomNodeSorter(), 
+				FragmentationRecompute.Resolution.SINGLE, false)}; 
+		Series.generate(net, m, times);
+	}
+	
+	public static void PLD(int n, double alpha1,double alpha2, int times){
+		Network net = new PowerLawRandomGraph(n,alpha1,alpha2,1,1,n,n,null);
+		Metric[] m = new Metric[]{
+		new StrongFragmentationRecompute(new BetweennessCentralityNSUpdate(), 
+				FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new CCSorterGreedy(false,CCSorterGreedy.Computation.DEGREEBASED), 
+						FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new CCSorterGreedy(false,CCSorterGreedy.Computation.NODEBASED), 
+		FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new CCSorterItertively(false,CCSorterItertively.Computation.DEGREEBASED), 
+				FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new CCSorterItertively(false,CCSorterItertively.Computation.NODEBASED), 
+						FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new CCSorterUpdate(false,CCSorterUpdate.Computation.DEGREEBASED), 
+								FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new CCSorterUpdate(false,CCSorterUpdate.Computation.NODEBASED), 
+										FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new CentralityNodeSorter(CentralityMode.BETWEENNESS,NodeSorterMode.DESC), 
+												FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new ClosenessCentralityNodeSorter(NodeSorterMode.DESC), 
+														FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new ClosenessCentralityNSUpdate(), 
+																FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new DegreeNodeSorter(NodeSorterMode.DESC),FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new DegreeNodeSorterUpdate(NodeSorterMode.DESC), FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new EigenvectorCentralityNodeSorter(NodeSorterMode.DESC), 
+				FragmentationRecompute.Resolution.SINGLE, false),
+				new StrongFragmentationRecompute(new EigenvectorCentralityNSUpdate(), 
+						FragmentationRecompute.Resolution.SINGLE, false), new StrongFragmentationRecompute(new ConnectivityNodeSorter(Fragmentation.Type.WEAK), 
+								FragmentationRecompute.Resolution.SINGLE, false),
+								new StrongFragmentationRecompute(new ConnectivityNSUpdate(Fragmentation.Type.WEAK), 
+										FragmentationRecompute.Resolution.SINGLE, false),
+		new StrongFragmentationRecompute(new RandomNodeSorter(), 
+				FragmentationRecompute.Resolution.SINGLE, false)}; 
+		Series.generate(net, m, times);
 	}
 	
 	private static void printCCNonIterative(Graph g){
