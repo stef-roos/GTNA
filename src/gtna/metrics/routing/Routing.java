@@ -37,15 +37,18 @@ package gtna.metrics.routing;
 
 import gtna.data.Single;
 import gtna.graph.Graph;
-import gtna.graph.Node;
+import gtna.id.Identifier;
 import gtna.io.DataWriter;
 import gtna.metrics.Metric;
 import gtna.networks.Network;
 import gtna.routing.Route;
 import gtna.routing.RoutingAlgorithm;
+import gtna.routing.selection.source.ConsecutiveSourceSelection;
+import gtna.routing.selection.source.SourceSelection;
+import gtna.routing.selection.target.RepresentativeIdTargetSelection;
+import gtna.routing.selection.target.TargetSelection;
 import gtna.util.Config;
 import gtna.util.Distribution;
-import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 import gtna.util.parameter.ParameterListParameter;
 
@@ -55,8 +58,14 @@ import java.util.Random;
 
 public class Routing extends Metric {
 
+<<<<<<< .merge_file_4namqc
 	protected RoutingAlgorithm ra;
 	protected int routesPerNode;
+=======
+	private RoutingAlgorithm ra;
+	private SourceSelection sourceSelection;
+	private TargetSelection targetSelection;
+>>>>>>> .merge_file_ArkpId
 
 	protected Route[] routes;
 
@@ -68,23 +77,30 @@ public class Routing extends Metric {
 	protected double successRate;
 	protected double failureRate;
 
+	public Routing(RoutingAlgorithm ra, SourceSelection sourceSelection,
+			TargetSelection targetSelection) {
+		super("ROUTING",
+				new Parameter[] {
+						new ParameterListParameter("ROUTING_ALGORITHM", ra),
+						new ParameterListParameter("SOURCE_SELECTION",
+								sourceSelection),
+						new ParameterListParameter("TARGET_SELECTION",
+								targetSelection) });
+
+		this.ra = ra;
+		this.sourceSelection = sourceSelection;
+		this.targetSelection = targetSelection;
+
+		this.init();
+	}
+
 	public Routing(RoutingAlgorithm ra) {
 		super("ROUTING", new Parameter[] { new ParameterListParameter(
 				"ROUTING_ALGORITHM", ra) });
 
 		this.ra = ra;
-		this.routesPerNode = Config.getInt("ROUTING_ROUTES_PER_NODE");
-
-		this.init();
-	}
-
-	public Routing(RoutingAlgorithm ra, int routesPerNode) {
-		super("ROUTING", new Parameter[] {
-				new ParameterListParameter("ROUTING_ALGORITHM", ra),
-				new IntParameter("ROUTES_PER_NODE", routesPerNode) });
-
-		this.ra = ra;
-		this.routesPerNode = routesPerNode;
+		this.sourceSelection = new ConsecutiveSourceSelection();
+		this.targetSelection = new RepresentativeIdTargetSelection();
 
 		this.init();
 	}
@@ -102,50 +118,60 @@ public class Routing extends Metric {
 
 	@Override
 	public boolean applicable(Graph g, Network n, HashMap<String, Metric> m) {
-		return this.ra.applicable(g);
+		return this.ra.applicable(g) && this.sourceSelection.applicable(g)
+				&& this.targetSelection.applicable(g);
 	}
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	public void computeData(Graph graph, Network network,
 			HashMap<String, Metric> metrics) {
 		this.ra.preprocess(graph);
+		this.sourceSelection.init(graph);
+		this.targetSelection.init(graph);
+
 		Random rand = new Random();
-		this.routes = new Route[graph.getNodes().length * this.routesPerNode];
+		int routesPerNode = Config.getInt("ROUTING_ROUTES_PER_NODE");
+		this.routes = new Route[graph.getNodes().length * routesPerNode];
 		int index = 0;
 
-		int parallel = Config.getInt("PARALLEL_ROUTINGS");
-		if (parallel > 1) {
-			for (Node start : graph.getNodes()) {
-				for (int i = 0; i < this.routesPerNode; i++) {
-					this.routes[index++] = ra.routeToRandomTarget(graph,
-							start.getIndex(), rand);
-				}
-			}
-		} else {
-			RoutingThread[] threads = new RoutingThread[parallel];
-			for (int i = 0; i < threads.length; i++) {
-				int start = graph.getNodes().length / threads.length * i;
-				int end = graph.getNodes().length / threads.length * (i + 1)
-						- 1;
-				if (i == threads.length - 1) {
-					end = graph.getNodes().length - 1;
-				}
-				threads[i] = new RoutingThread(start, end, this.routesPerNode,
-						graph, ra, rand);
-				threads[i].start();
-			}
-			index = 0;
-			for (RoutingThread t : threads) {
-				try {
-					t.join();
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				for (Route r : t.getRoutes()) {
-					this.routes[index++] = r;
-				}
+		// int parallel = Config.getInt("PARALLEL_ROUTINGS");
+		// if (parallel == 1) {
+		for (int n = 0; n < graph.getNodeCount(); n++) {
+			for (int i = 0; i < routesPerNode; i++) {
+				int start = this.sourceSelection.getNextSource();
+				Identifier target = this.targetSelection.getNextTarget();
+				Route r = this.ra.routeToTarget(graph, start, target, rand);
+				this.routes[index++] = r;
 			}
 		}
+		// } else {
+		// System.err
+		// .println("parallelization in routing not supported right now");
+		// RoutingThread[] threads = new RoutingThread[parallel];
+		// for (int i = 0; i < threads.length; i++) {
+		// int start = graph.getNodes().length / threads.length * i;
+		// int end = graph.getNodes().length / threads.length * (i + 1)
+		// - 1;
+		// if (i == threads.length - 1) {
+		// end = graph.getNodes().length - 1;
+		// }
+		// threads[i] = new RoutingThread(start, end, routesPerNode,
+		// graph, ra, rand);
+		// threads[i].start();
+		// }
+		// index = 0;
+		// for (RoutingThread t : threads) {
+		// try {
+		// t.join();
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// }
+		// for (Route r : t.getRoutes()) {
+		// this.routes[index++] = r;
+		// }
+		// }
+		// }
 
 		this.hopDistribution = this.computeHopDistribution();
 		this.hopDistributionAbsolute = this.computeHopDistributionAbsolute();
@@ -285,8 +311,8 @@ public class Routing extends Metric {
 			int index = 0;
 			for (int i = this.start; i <= this.end; i++) {
 				for (int j = 0; j < this.times; j++) {
-					this.routes[index++] = ra.routeToRandomTarget(graph, i,
-							rand);
+					// this.routes[index++] = ra.routeToRandomTarget(graph, i,
+					// rand);
 				}
 			}
 		}

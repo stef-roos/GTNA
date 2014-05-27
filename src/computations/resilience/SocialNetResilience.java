@@ -35,16 +35,22 @@
  */
 package computations.resilience;
 
+import gtna.data.Series;
 import gtna.graph.Graph;
 import gtna.graph.Node;
+import gtna.graph.sorting.DegreeNodeSorter;
+import gtna.graph.sorting.NodeSorter.NodeSorterMode;
+import gtna.graph.sorting.RandomNodeSorter;
+import gtna.metrics.Metric;
+import gtna.metrics.basic.DegreeDistribution;
 import gtna.metrics.fragmentation.CriticalPointsTheory;
+import gtna.metrics.fragmentation.Fragmentation.Resolution;
+import gtna.metrics.fragmentation.StrongFragmentation;
 import gtna.networks.Network;
+import gtna.networks.model.ErdosRenyi;
 import gtna.networks.util.ReadableFile;
 
-import java.io.BufferedWriter;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.Date;
+
 
 /**
  * @author stef
@@ -56,11 +62,38 @@ public class SocialNetResilience {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		double[] dist2 = DegreeRemoval.getScaleFree(1000, 2, 1);
-		DegreeRemoval.writeLog(dist2, "original.txt");
-		for (int i = 0; i < 11; i++){
-			DegreeRemoval.writeLog(DegreeRemoval.removeRandom(dist2, i*0.1), i*0.1+".txt");
-		}
+		
+//		int[] n = {1000,10000,100000,1000000};
+//		double[] fail= {0.01, 0.1, 0.3, 0.5, 0.9, 0.99};
+//		double[] alpha = {2.2,2.3,2.4};
+//		(new File("FailureDeg/")).mkdir();
+//		for (int a = 0; a < alpha.length; a++){
+//		 for (int i = 0; i < n.length; i++){
+//			 System.out.println(n[i]+"-"+alpha[a] + new Date());
+//			double[] dist = DegreeRemoval.getScaleFree(n[i], alpha[a], 1);
+//			DegreeRemoval.writeLog(dist, "FailureDeg/"+n[i]+"-"+alpha[a]+"-0.0.txt");
+//			for (int j = 0; j < fail.length; j++){
+//				double[] distN = DegreeRemoval.removeRandom(dist, fail[j]);
+//				DegreeRemoval.writeLog(distN, "FailureDeg/"+n[i]+"-"+alpha[a]+"-"+fail[j]+".txt");
+//			}
+//		 }
+//		}
+		int n = 10000;
+		Network nw = new ErdosRenyi(n,5,true,null);
+		Metric[] m = new Metric[]{new DegreeDistribution(),
+				new StrongFragmentation(new RandomNodeSorter(),Resolution.PERCENT),
+				new StrongFragmentation(new DegreeNodeSorter(NodeSorterMode.DESC),Resolution.PERCENT),
+				new CriticalPointsTheory(false,CriticalPointsTheory.Selection.RANDOM),
+				new CriticalPointsTheory(false,CriticalPointsTheory.Selection.LARGEST)};
+		Series.generate(nw, m, 5);
+//		String folder = "/home/stef/svns/drafts/osnResilience/data/undir/";
+//		String[] files = {"astroPh.txt", "brightkite.txt", "facebook-infocom.txt", "facebook-wosn.txt",
+//				"gowalla.txt"};
+//		int[] max = {1010,1134,4960,2331, 14730};
+//		for (int i = 0; i < files.length; i++){
+//			double[] dist = DegreeRemoval.getDegreeFile(folder+files[i], max[i]);
+//			DegreeRemoval.writeLog(dist, folder + "log" + files[i]);
+//		}
 //		System.out.println("Begin " + new Date());
 //		int n = Integer.parseInt(args[1]);
 //		try {

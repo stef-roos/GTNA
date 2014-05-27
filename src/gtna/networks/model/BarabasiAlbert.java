@@ -65,6 +65,24 @@ public class BarabasiAlbert extends Network {
 
 	private int EDGES_PER_NODE = 3;
 
+	public static BarabasiAlbert[] get(int nodes, int[] edgesPerNode,
+			Transformation[] t) {
+		BarabasiAlbert[] nw = new BarabasiAlbert[edgesPerNode.length];
+		for (int i = 0; i < edgesPerNode.length; i++) {
+			nw[i] = new BarabasiAlbert(nodes, edgesPerNode[i], t);
+		}
+		return nw;
+	}
+
+	public static BarabasiAlbert[] get(int[] nodes, int edgesPerNode,
+			Transformation[] t) {
+		BarabasiAlbert[] nw = new BarabasiAlbert[nodes.length];
+		for (int i = 0; i < nodes.length; i++) {
+			nw[i] = new BarabasiAlbert(nodes[i], edgesPerNode, t);
+		}
+		return nw;
+	}
+
 	public BarabasiAlbert(int nodes, int EDGES_PER_NODE, Transformation[] t) {
 		super("BARABASI_ALBERT", nodes, new Parameter[] { new IntParameter(
 				"EDGES_PER_NODE", EDGES_PER_NODE) }, t);
@@ -81,7 +99,12 @@ public class BarabasiAlbert extends Network {
 		int initNodes = Math.max(this.INIT_NETWORK_SIZE,
 				this.EDGES_PER_NODE + 5);
 		int initEdges = initNodes * this.EDGES_PER_NODE;
+<<<<<<< .merge_file_d9EDfg
 		Graph temp = new Complete(initNodes, null)
+=======
+		int ed = 0;
+		Graph temp = new ErdosRenyi(initNodes, this.EDGES_PER_NODE, true, null)
+>>>>>>> .merge_file_eW0pTc
 				.generate();
 		Edges edges = new Edges(nodes, initEdges + (nodes.length - initNodes)
 				* this.EDGES_PER_NODE);
@@ -91,10 +114,12 @@ public class BarabasiAlbert extends Network {
 			int[] Out = temp.getNodes()[i].getOutgoingEdges();
 			for (int j = 0; j < Out.length; j++) {
 				edges.add(i, Out[j]);
+				ed++;
 			}
 		}
 
-		int edgeCounter = initEdges;
+		// System.out.println("init = " + initEdges + " ed=" +ed);
+		int edgeCounter = edges.size();
 		for (int i = initNodes; i < nodes.length; i++) {
 			int added = 0;
 			double[] rands = new double[this.EDGES_PER_NODE];
@@ -103,10 +128,16 @@ public class BarabasiAlbert extends Network {
 			}
 			Arrays.sort(rands);
 
+			// System.out.println("i=" + i + " rands:");
+			// for (int j = 0; j < rands.length; j++){
+			// System.out.println("" + rands[j] + " edges=" + edgeCounter);
+			// }
 			double sum2 = 0;
-			int current = 0;
-			while (added < rands.length && current < i) {
+			int current = i - 1;
+			while (added < rands.length && current > -1) {
 				sum2 = sum2 + (double) (in[current] + out[current]);
+				// System.out.println("Sum " + sum2 + " i="+i +
+				// " edgeCounter = " + edgeCounter + " current=" + current);
 				if (sum2 >= rands[added]) {
 					edges.add(i, current);
 					edges.add(current, i);
@@ -115,10 +146,13 @@ public class BarabasiAlbert extends Network {
 					out[i]++;
 					in[current]++;
 					out[current]++;
-					edgeCounter++;
+					edgeCounter = edgeCounter + 2;
+
 				}
-				current++;
+				current--;
 			}
+			// System.out.println("Added " + added);
+
 		}
 
 		edges.fill();

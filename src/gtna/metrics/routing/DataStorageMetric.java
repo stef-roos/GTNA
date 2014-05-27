@@ -37,8 +37,8 @@ package gtna.metrics.routing;
 
 import gtna.data.Single;
 import gtna.graph.Graph;
-import gtna.id.data.DataStorage;
-import gtna.id.data.DataStorageList;
+import gtna.id.data.DataStore;
+import gtna.id.data.DataStoreList;
 import gtna.io.DataWriter;
 import gtna.metrics.Metric;
 import gtna.networks.Network;
@@ -63,19 +63,19 @@ public class DataStorageMetric extends Metric {
 
 	@Override
 	public void computeData(Graph g, Network n, HashMap<String, Metric> m) {
-		DataStorageList dsl = (DataStorageList) g.getProperty("DATA_STORAGE_0");
+		DataStoreList dsl = (DataStoreList) g.getProperty("DATA_STORAGE_0");
 
 		int max = 0;
-		for (DataStorage ds : dsl.getList()) {
+		for (DataStore ds : dsl.getList()) {
 			// System.out.println("DS.size = " + ds.size());
-			if (ds.size() > max) {
-				max = ds.size();
+			if (ds.sizeOfStore() > max) {
+				max = ds.sizeOfStore();
 			}
 		}
 
 		double[] distr = new double[max + 1];
-		for (DataStorage ds : dsl.getList()) {
-			distr[ds.size()]++;
+		for (DataStore ds : dsl.getList()) {
+			distr[ds.sizeOfStore()]++;
 		}
 		ArrayUtils.divide(distr, dsl.getList().length);
 
@@ -108,7 +108,7 @@ public class DataStorageMetric extends Metric {
 	@Override
 	public boolean applicable(Graph g, Network n, HashMap<String, Metric> m) {
 		return g.hasProperty("DATA_STORAGE_0")
-				&& g.getProperty("DATA_STORAGE_0") instanceof DataStorageList;
+				&& g.getProperty("DATA_STORAGE_0") instanceof DataStoreList;
 	}
 
 }

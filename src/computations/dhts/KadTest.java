@@ -42,7 +42,10 @@ import gtna.metrics.routing.Routing;
 import gtna.networks.Network;
 import gtna.networks.p2p.chord.Chord.IDSelection;
 import gtna.networks.p2p.kademlia.BittorrentKademlia;
+import gtna.networks.p2p.kademlia.KAD;
+import gtna.networks.p2p.kademlia.Kademlia;
 import gtna.routing.p2p.KademliaRouting;
+import gtna.routing.p2p.KademliaRoutingFailure;
 import gtna.util.Config;
 
 /**
@@ -55,19 +58,34 @@ public class KadTest {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		Config.overwrite("MAIN_DATA_FOLDER", "/home/stef/svns/drafts/p2pmodel/results/simu/");
-		//Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
-//		Network kad = new KademliaEclipse(1000,128,8,IDSelection.RANDOM,10, AttackerSelection.TARGET, 0,
-//				null);
-		Network kad = new BittorrentKademlia(100000,128,IDSelection.RANDOM,
-				null);
-//		Metric[] m = new Metric[]{new Routing(new PastryRouting())};
-//		Series.generate(pastry, m, 10);
-//		Metric[] m = new Metric[]{new DegreeDistribution(), 
-//				new RoutingAttack(new KademliaRoutingFailure(30,3,2,0.1))};
+		int mode = Integer.parseInt(args[0]);
+		int n = Integer.parseInt(args[1]);
+		int start = Integer.parseInt(args[2]);
+		int end = Integer.parseInt(args[3]);
+		//double p = Double.parseDouble(args[4]);
+//		//Config.overwrite("MAIN_DATA_FOLDER", "/home/stef/svns/drafts/p2pmodel/results/simu/");
+//		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");
+////		Network kad = new KademliaEclipse(1000,128,8,IDSelection.RANDOM,10, AttackerSelection.TARGET, 0,
+////				null);
+//		Network kad;
+//		switch (mode){
+//		case 1: kad = new Kademlia(n,128,8,IDSelection.RANDOM,
+//				null); break;
+//		case 2: kad = new BittorrentKademlia(n,128,IDSelection.RANDOM,
+//				null); break;
+//		case 3: kad = new KAD(100000,128,10,IDSelection.RANDOM,
+//				null); break;	
+//		default: throw new IllegalArgumentException("unknown mode");		
+//		}
+		//Config.overwrite(key, value)
+		 Network kad = new Kademlia(n,128,8,IDSelection.RANDOM,
+					null);
 		Metric[] m = new Metric[]{new DegreeDistribution(), 
-				new Routing(new KademliaRouting(16,3,2)), new Routing(new KademliaRouting(16,4,1))};
-		Series.generate(kad, m, 20);
+				new Routing(new KademliaRoutingFailure(100,3,2,0.0)),new Routing(new KademliaRoutingFailure(100,4,1, 0.0)),
+				new Routing(new KademliaRoutingFailure(100,3,2,0.1)),new Routing(new KademliaRoutingFailure(100,4,1, 0.1)),
+				new Routing(new KademliaRoutingFailure(100,3,2,0.2)),new Routing(new KademliaRoutingFailure(100,4,1, 0.2)),
+				new Routing(new KademliaRoutingFailure(100,3,2,0.3)),new Routing(new KademliaRoutingFailure(100,4,1, 0.3))};
+		Series.generate(kad, m, start, end);
 
 	}
 

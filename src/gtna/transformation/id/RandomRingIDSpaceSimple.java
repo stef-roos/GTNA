@@ -38,16 +38,11 @@ package gtna.transformation.id;
 import gtna.graph.Graph;
 import gtna.graph.GraphProperty;
 import gtna.id.ring.RingIdentifier;
-import gtna.id.ring.RingIdentifierSpace;
 import gtna.id.ring.RingIdentifierSpaceSimple;
 import gtna.id.ring.RingPartitionSimple;
-import gtna.id.ring.RingIdentifierSpace.Distance;
 import gtna.transformation.Transformation;
 import gtna.util.parameter.BooleanParameter;
-import gtna.util.parameter.DoubleParameter;
-import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
-import gtna.util.parameter.StringParameter;
 
 import java.util.Random;
 
@@ -59,10 +54,10 @@ import java.util.Random;
  * 
  */
 public class RandomRingIDSpaceSimple extends Transformation {
-	private int realities;
 
-	private double modulus;
+	protected boolean wrapAround;
 
+<<<<<<< .merge_file_8rX1xD
 	private boolean wrapAround;
 	
 	private Distance distance;
@@ -109,22 +104,27 @@ public class RandomRingIDSpaceSimple extends Transformation {
 		this.wrapAround = wrapAround;
 		this.distance = distance;
 		this.overwrite = overwrite;
+=======
+	public RandomRingIDSpaceSimple(boolean wrapAround) {
+		super("RANDOM_RING_ID_SPACE_SIMPLE",
+				new Parameter[] { new BooleanParameter("WRAP_AROUND",
+						wrapAround) });
+		this.wrapAround = wrapAround;
+>>>>>>> .merge_file_WB3KDA
 	}
 
 	@Override
 	public Graph transform(Graph graph) {
 		Random rand = new Random();
-		for (int r = 0; r < this.realities; r++) {
-			RingPartitionSimple[] partitions = new RingPartitionSimple[graph
-					.getNodes().length];
-			RingIdentifierSpaceSimple idSpace = new RingIdentifierSpaceSimple(
-					partitions, this.modulus, this.wrapAround, this.distance);
-			for (int i = 0; i < partitions.length; i++) {
-				partitions[i] = new RingPartitionSimple(RingIdentifier.rand(
-						rand, idSpace));
-			}
-			graph.addProperty(graph.getNextKey("ID_SPACE"), idSpace);
+		RingPartitionSimple[] partitions = new RingPartitionSimple[graph
+				.getNodes().length];
+		RingIdentifierSpaceSimple idSpace = new RingIdentifierSpaceSimple(
+				partitions, this.wrapAround);
+		for (int i = 0; i < partitions.length; i++) {
+			partitions[i] = new RingPartitionSimple(
+					(RingIdentifier) idSpace.getRandomIdentifier(rand));
 		}
+		graph.addProperty(graph.getNextKey("ID_SPACE"), idSpace);
 		return graph;
 	}
 

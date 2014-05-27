@@ -45,6 +45,10 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.Vector;
 
 /**
  * @author stef
@@ -56,30 +60,43 @@ public class Language {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		String[] graphs = new File("POS_3lang_try3/").list();
-		String[] lang = {"de", "en", "fr"};
-		String[] type = {"ADJ-NAME", "ADJ-NOUN", "ADJ-VERB", "NOUN-NAME", "NOUN-VERB", "VERB-NAME"};
-		String[] sig = {""}; 
+		String[] graphs = new File("POS/").list();
+		HashMap<String, Vector<Integer>> map = new HashMap<String, Vector<Integer>>();
+		for (int j = 0; j < graphs.length; j++){
+			String prefix = graphs[j].split("3M")[0];
+			Vector<Integer> vec = map.get(prefix);
+			if (vec == null){
+				vec = new Vector<Integer>();
+				map.put(prefix, vec);
+			}
+			int number = Integer.parseInt(graphs[j].split("co-s.")[1]);
+			vec.add(number);
+		}
+		Set<String> prefixes = map.keySet();
+		Iterator<String> it = prefixes.iterator();
+		while (it.hasNext()){
+			String prefix = it.next();
+			Vector<Integer> vec = map.get(prefix);
         try {
-			BufferedWriter bw = new BufferedWriter(new FileWriter("transitivityPOS_3lang_try3.txt"));
+			BufferedWriter bw = new BufferedWriter(new FileWriter("transitivity"+prefix+".txt"));
 			bw.write("#Graph, nodes, edges, average degree, transitivity");
-			for (int i = 0; i < lang.length; i++){
-				for (int j = 0; j < type.length; j++){
-					for (int k = 0; k < sig.length; k++){
-						Network net = new ReadableFile("L2", "L2","POS_3lang_try3/"+lang[i]+"1M-POS6K."+type[j],null);
+			for (int i = 0; i < vec.size(); i++){
+//				for (int j = 0; j < type.length; j++){
+//					for (int k = 0; k < sig.length; k++){
+						Network net = new ReadableFile("L2", "L2","POS/"+prefix+"3M.co-s."+vec.get(i),null);
 						Metric m = new ClusteringCoefficient();
 						m.computeData(net.generate(), net, null);
 						Metric m2 = new DegreeDistribution();
 						m2.computeData(net.generate(), net, null);
 						bw.newLine();
-						bw.write(lang[i]+"1M_POS6K"+type[j]+ ":	"
+						bw.write(vec.get(i)+ ":	"
 						          +m2.getSingles()[0].value+ "	" 
 						          +m2.getSingles()[1].value+ "	"
 						          +m2.getSingles()[4].value+ "	"
 						          +m.getSingles()[1].value);
 						
-					}
-				}
+//					}
+//				}
 			}
 			bw.flush();
 			bw.close();
@@ -87,6 +104,9 @@ public class Language {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		}
 	}
+	
+	
 
 }

@@ -37,6 +37,7 @@ package computations.students;
 
 import gtna.data.Series;
 import gtna.graph.sorting.RandomNodeSorter;
+import gtna.io.graphWriter.GtnaGraphWriter;
 import gtna.metrics.Metric;
 import gtna.metrics.basic.ClusteringCoefficient;
 import gtna.metrics.basic.DegreeDistribution;
@@ -45,8 +46,10 @@ import gtna.metrics.fragmentation.Fragmentation;
 import gtna.metrics.fragmentation.WeakFragmentation;
 import gtna.networks.Network;
 import gtna.networks.model.ErdosRenyi;
+import gtna.networks.model.smallWorld.Kleinberg;
 import gtna.networks.util.ReadableFile;
 import gtna.plot.Plotting;
+import gtna.util.Config;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -64,7 +67,12 @@ public class Exercise1 {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		getPointTable();
+		Config.overwrite("SERIES_GRAPH_WRITE", ""+true);
+		Network nw1 = new Kleinberg(45, 2, 1,1,2,true,true, null);
+		//Graph g = nw1.generate();
+		Metric[] m = new Metric[]{new DegreeDistribution(), new ShortestPaths()};
+		Series s = Series.generate(nw1, m, 1);
+		//new GtnaGraphWriter().write(g, "./data/firstExample-graph.txt");
 //		Config.overwrite("MAIN_DATA_FOLDER", "data/ex9/");
 //		//Config.overwrite("MAIN_PLOT_FOLDER", "data/ex1/");
 //		Config.overwrite("SKIP_EXISTING_DATA_FOLDERS", "false");

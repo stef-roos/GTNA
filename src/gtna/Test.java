@@ -37,11 +37,10 @@ package gtna;
 
 import gtna.data.Series;
 import gtna.metrics.Metric;
-import gtna.metrics.routing.Routing;
+import gtna.metrics.basic.DegreeDistribution;
 import gtna.networks.Network;
-import gtna.networks.p2p.chord.Chord;
-import gtna.networks.p2p.chord.Chord.IDSelection;
-import gtna.routing.greedy.Greedy;
+import gtna.networks.model.smallWorld.ScaleFreeUndirected;
+import gtna.util.Config;
 
 /**
  * @author stef
@@ -1122,9 +1121,12 @@ public class Test {
 //				e.printStackTrace();
 //			}
 //		}
-		Network chord = new Chord(100,128,IDSelection.RANDOM,null);
-		Metric[] m = new Metric[]{new Routing(new Greedy())};
-		Series.generate(chord, m, 1);
+		Config.overwrite("SERIES_GRAPH_WRITE", ""+true);
+		int n = Integer.parseInt(args[0]);
+		Network net = new ScaleFreeUndirected(n,2.3,2,(int)Math.sqrt(n), null);
+			Metric[] m = new Metric[]{new DegreeDistribution()};
+			Series.generate(net, m, 1);
+		
 	}
 
 }

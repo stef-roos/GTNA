@@ -35,24 +35,33 @@
  */
 package gtna.routing.greedy;
 
+import gtna.data.Series;
 import gtna.graph.Graph;
-import gtna.graph.GraphProperty;
 import gtna.graph.Node;
-import gtna.id.BIIdentifier;
-import gtna.id.BIIdentifierSpace;
-import gtna.id.BIPartition;
-import gtna.id.DIdentifier;
-import gtna.id.DIdentifierSpace;
-import gtna.id.DPartition;
 import gtna.id.Identifier;
-import gtna.id.data.DataStorageList;
+import gtna.id.IdentifierSpace;
+import gtna.id.data.LruDataStore;
+import gtna.metrics.Metric;
+import gtna.metrics.basic.DegreeDistribution;
+import gtna.metrics.routing.DataStorageMetric;
+import gtna.metrics.routing.Routing;
+import gtna.networks.Network;
+import gtna.networks.util.ReadableFile;
+import gtna.plot.Plotting;
 import gtna.routing.Route;
-import gtna.routing.RouteImpl;
 import gtna.routing.RoutingAlgorithm;
+import gtna.routing.routingTable.CcnRouting;
+import gtna.routing.selection.source.ConsecutiveSourceSelection;
+import gtna.routing.selection.source.SourceSelection;
+import gtna.routing.selection.target.DataStorageRandomTargetSelection;
+import gtna.routing.selection.target.TargetSelection;
+import gtna.transformation.Transformation;
+import gtna.transformation.id.node.NodeIds;
+import gtna.transformation.id.node.NodeIdsDataStorage;
+import gtna.transformation.id.node.NodeIdsRoutingTable;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -61,15 +70,6 @@ import java.util.Random;
  * 
  */
 public class Greedy extends RoutingAlgorithm {
-	private DIdentifierSpace idSpaceD;
-
-	private DPartition[] pD;
-
-	private BIIdentifierSpace idSpaceBI;
-
-	private BIPartition[] pBI;
-
-	private DataStorageList dsl;
 
 	private int ttl;
 
@@ -84,43 +84,16 @@ public class Greedy extends RoutingAlgorithm {
 	}
 
 	@Override
-	public Route routeToRandomTarget(Graph graph, int start, Random rand) {
-		if (this.idSpaceBI != null) {
-			return this.routeToRandomTargetBI(graph, start, rand);
-		} else if (this.idSpaceD != null) {
-			return this.routeToRandomTargetD(graph, start, rand);
-		} else {
-			return null;
-		}
-	}
-
-	@SuppressWarnings("rawtypes")
-	@Override
 	public Route routeToTarget(Graph graph, int start, Identifier target,
 			Random rand) {
-		if (this.idSpaceBI != null) {
-			return this.routeBI(new ArrayList<Integer>(), start,
-					(BIIdentifier) target, rand, graph.getNodes());
-		} else if (this.idSpaceD != null) {
-			return this.routeD(new ArrayList<Integer>(), start,
-					(DIdentifier) target, rand, graph.getNodes());
-		} else {
-			return null;
-		}
-	}
-
-	private Route routeToRandomTargetBI(Graph graph, int start, Random rand) {
-		BIIdentifier target = (BIIdentifier) this.idSpaceBI.randomID(rand);
-		while (this.pBI[start].contains(target)) {
-			target = (BIIdentifier) this.idSpaceBI.randomID(rand);
-		}
-		return this.routeBI(new ArrayList<Integer>(), start, target, rand,
+		return this.route(new ArrayList<Integer>(), start, target, rand,
 				graph.getNodes());
 	}
 
-	private Route routeBI(ArrayList<Integer> route, int current,
-			BIIdentifier target, Random rand, Node[] nodes) {
+	private Route route(ArrayList<Integer> route, int current,
+			Identifier target, Random rand, Node[] nodes) {
 		route.add(current);
+<<<<<<< .merge_file_85w3ei
 		System.out.println("target " + target.toString() + " current " + this.idSpaceBI.getPartitions()[current].getRepresentativeID().toString() + " "
 				+ " dist " + this.idSpaceBI.getPartitions()[current]
 						.distance(target).toString());
@@ -130,96 +103,29 @@ public class Greedy extends RoutingAlgorithm {
 		if (this.dsl != null
 				&& this.dsl.getStorageForNode(current).containsId(target)) {
 			return new RouteImpl(route, true);
+=======
+
+		if (this.isEndPoint(current, target)) {
+			return new Route(route, true);
+>>>>>>> .merge_file_tDzxZb
 		}
 		if (route.size() > this.ttl) {
-			return new RouteImpl(route, false);
+			return new Route(route, false);
 		}
-		BigInteger currentDist = this.idSpaceBI.getPartitions()[current]
-				.distance(target);
-		BigInteger minDist = this.idSpaceBI.getMaxDistance();
-		int minNode = -1;
-		for (int out : nodes[current].getOutgoingEdges()) {
-			BigInteger dist = this.pBI[out].distance(target);
-			if (dist.compareTo(minDist) == -1
-					&& dist.compareTo(currentDist) == -1) {
-				minDist = dist;
-				minNode = out;
-			}
-		}
-		if (minNode == -1) {
-			return new RouteImpl(route, false);
-		}
-		return this.routeBI(route, minNode, target, rand, nodes);
-	}
 
-	private Route routeToRandomTargetD(Graph graph, int start, Random rand) {
-		DIdentifier target = (DIdentifier) this.idSpaceD.randomID(rand);
-		while (this.pD[start].contains(target)) {
-			target = (DIdentifier) this.idSpaceD.randomID(rand);
+		int closest = target.getClosestNode(nodes[current].getOutgoingEdges(),
+				this.identifierSpace.getPartitions());
+		if (!target.isCloser(this.identifierSpace.getPartition(closest),
+				this.identifierSpace.getPartition(current))) {
+			return new Route(route, false);
 		}
-		return this.routeD(new ArrayList<Integer>(), start, target, rand,
-				graph.getNodes());
-	}
 
-	private Route routeD(ArrayList<Integer> route, int current,
-			DIdentifier target, Random rand, Node[] nodes) {
-		route.add(current);
-		if (this.idSpaceD.getPartitions()[current].contains(target)) {
-			return new RouteImpl(route, true);
-		}
-		if (this.dsl != null
-				&& this.dsl.getStorageForNode(current).containsId(target)) {
-			return new RouteImpl(route, true);
-		}
-		if (route.size() > this.ttl) {
-			return new RouteImpl(route, false);
-		}
-		double currentDist = this.idSpaceD.getPartitions()[current]
-				.distance(target);
-		double minDist = this.idSpaceD.getMaxDistance();
-		int minNode = -1;
-		for (int out : nodes[current].getOutgoingEdges()) {
-			double dist = this.pD[out].distance(target);
-			if (dist < minDist && dist < currentDist) {
-				minDist = dist;
-				minNode = out;
-			}
-		}
-		if (minNode == -1) {
-			return new RouteImpl(route, false);
-		}
-		return this.routeD(route, minNode, target, rand, nodes);
+		return this.route(route, closest, target, rand, nodes);
 	}
 
 	@Override
 	public boolean applicable(Graph graph) {
-		return graph.hasProperty("ID_SPACE_0")
-				&& (graph.getProperty("ID_SPACE_0") instanceof DIdentifierSpace || graph
-						.getProperty("ID_SPACE_0") instanceof BIIdentifierSpace);
-	}
-
-	@Override
-	public void preprocess(Graph graph) {
-		GraphProperty p = graph.getProperty("ID_SPACE_0");
-		if (p instanceof DIdentifierSpace) {
-			this.idSpaceD = (DIdentifierSpace) p;
-			this.pD = (DPartition[]) this.idSpaceD.getPartitions();
-			this.idSpaceBI = null;
-			this.pBI = null;
-		} else if (p instanceof BIIdentifierSpace) {
-			this.idSpaceD = null;
-			this.pD = null;
-			this.idSpaceBI = (BIIdentifierSpace) p;
-			this.pBI = (BIPartition[]) this.idSpaceBI.getPartitions();
-		} else {
-			this.idSpaceD = null;
-			this.pD = null;
-			this.idSpaceBI = null;
-			this.pBI = null;
-		}
-		if (graph.hasProperty("DATA_STORAGE_0")) {
-			this.dsl = (DataStorageList) graph.getProperty("DATA_STORAGE_0");
-		}
+		return graph.hasProperty("ID_SPACE_0", IdentifierSpace.class);
 	}
 
 }

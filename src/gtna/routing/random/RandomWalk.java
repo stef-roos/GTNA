@@ -39,10 +39,7 @@ import gtna.graph.Graph;
 import gtna.graph.Node;
 import gtna.id.Identifier;
 import gtna.id.IdentifierSpace;
-import gtna.id.Partition;
-import gtna.id.data.DataStorageList;
 import gtna.routing.Route;
-import gtna.routing.RouteImpl;
 import gtna.routing.RoutingAlgorithm;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
@@ -54,29 +51,14 @@ import java.util.Random;
  * @author benni
  * 
  */
-@SuppressWarnings({ "rawtypes", "unchecked" })
+@SuppressWarnings({ "rawtypes" })
 public class RandomWalk extends RoutingAlgorithm {
 
 	private int ttl;
 
-	private IdentifierSpace ids;
-
-	private Partition[] p;
-
-	private DataStorageList dsl;
-
 	public RandomWalk(int ttl) {
 		super("RANDOM_WALK", new Parameter[] { new IntParameter("TTL", ttl) });
 		this.ttl = ttl;
-	}
-
-	@Override
-	public Route routeToRandomTarget(Graph graph, int start, Random rand) {
-		Identifier target = (Identifier) this.ids.randomID(rand);
-		while (this.p[start].contains(target)) {
-			target = (Identifier) this.ids.randomID(rand);
-		}
-		return this.routeToTarget(graph, start, target, rand);
 	}
 
 	@Override
@@ -89,19 +71,15 @@ public class RandomWalk extends RoutingAlgorithm {
 	private Route route(ArrayList<Integer> route, int current,
 			Identifier target, Random rand, Node[] nodes) {
 		route.add(current);
-		if (route.size() > 1 && this.p[current].contains(target)) {
-			return new RouteImpl(route, true);
-		}
-		if (route.size() > 1 && this.dsl != null
-				&& this.dsl.getStorageForNode(current).containsId(target)) {
-			return new RouteImpl(route, true);
+		if (this.isEndPoint(current, target)) {
+			return new Route(route, true);
 		}
 		if (route.size() > this.ttl) {
-			return new RouteImpl(route, false);
+			return new Route(route, false);
 		}
 
 		if (nodes[current].getOutDegree() == 0) {
-			return new RouteImpl(route, false);
+			return new Route(route, false);
 		}
 
 		int nextIndex = rand.nextInt(nodes[current].getOutDegree());
@@ -113,17 +91,7 @@ public class RandomWalk extends RoutingAlgorithm {
 
 	@Override
 	public boolean applicable(Graph graph) {
-		return graph.hasProperty("ID_SPACE_0")
-				&& graph.getProperty("ID_SPACE_0") instanceof IdentifierSpace;
-	}
-
-	@Override
-	public void preprocess(Graph graph) {
-		this.ids = (IdentifierSpace) graph.getProperty("ID_SPACE_0");
-		this.p = this.ids.getPartitions();
-		if (graph.hasProperty("DATA_STORAGE_0")) {
-			this.dsl = (DataStorageList) graph.getProperty("DATA_STORAGE_0");
-		}
+		return graph.hasProperty("ID_SPACE_0", IdentifierSpace.class);
 	}
 
 }

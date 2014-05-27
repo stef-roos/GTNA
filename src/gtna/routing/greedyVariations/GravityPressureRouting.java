@@ -10,9 +10,7 @@ import gtna.id.DIdentifier;
 import gtna.id.DIdentifierSpace;
 import gtna.id.DPartition;
 import gtna.id.Identifier;
-import gtna.id.data.DataStorageList;
 import gtna.routing.Route;
-import gtna.routing.RouteImpl;
 import gtna.routing.RoutingAlgorithm;
 import gtna.util.parameter.IntParameter;
 import gtna.util.parameter.Parameter;
@@ -38,8 +36,6 @@ public class GravityPressureRouting extends RoutingAlgorithm {
 	boolean mode;
 	int[] counts;
 
-	private DataStorageList dsl;
-
 	public GravityPressureRouting() {
 		this(Integer.MAX_VALUE);
 	}
@@ -51,18 +47,6 @@ public class GravityPressureRouting extends RoutingAlgorithm {
 		super("GRAVITY_PRESSURE",
 				new Parameter[] { new IntParameter("TTL", ttl) });
 
-	}
-
-	@Override
-	public Route routeToRandomTarget(Graph graph, int start, Random rand) {
-		this.setSets(graph.getNodes().length);
-		if (this.idSpaceBI != null) {
-			return this.routeToRandomTargetBI(graph, start, rand);
-		} else if (this.idSpaceD != null) {
-			return this.routeToRandomTargetD(graph, start, rand);
-		} else {
-			return null;
-		}
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -83,67 +67,39 @@ public class GravityPressureRouting extends RoutingAlgorithm {
 		}
 	}
 
-	private Route routeToRandomTargetBI(Graph graph, int start, Random rand) {
-		BIIdentifier target = (BIIdentifier) this.idSpaceBI.randomID(rand);
-		while (this.pBI[start].contains(target)) {
-			target = (BIIdentifier) this.idSpaceBI.randomID(rand);
-		}
-		this.mode = true;
-		return this.routeBI(new ArrayList<Integer>(), start, target, rand,
-				graph.getNodes(), this.idSpaceBI.getMaxDistance());
-	}
-
 	private Route routeBI(ArrayList<Integer> route, int current,
 			BIIdentifier target, Random rand, Node[] nodes, BigInteger minDist) {
 		route.add(current);
-		if (this.idSpaceBI.getPartitions()[current].contains(target)) {
-			return new RouteImpl(route, true);
-		}
-		if (this.dsl != null
-				&& this.dsl.getStorageForNode(current).containsId(target)) {
-			return new RouteImpl(route, true);
+		if (this.isEndPoint(current, target)) {
+			return new Route(route, false);
 		}
 		if (route.size() > this.ttl) {
-			return new RouteImpl(route, false);
+			return new Route(route, false);
 		}
 		BigInteger[] next = this.getNextBI(current, target, rand, nodes,
 				minDist);
 		int minNode = next[0].intValue();
 		BigInteger dist = next[1];
 		if (minNode == -1) {
-			return new RouteImpl(route, false);
+			return new Route(route, false);
 		}
 		return this.routeBI(route, minNode, target, rand, nodes, dist);
-	}
-
-	private Route routeToRandomTargetD(Graph graph, int start, Random rand) {
-		DIdentifier target = (DIdentifier) this.idSpaceD.randomID(rand);
-		while (this.pD[start].contains(target)) {
-			target = (DIdentifier) this.idSpaceD.randomID(rand);
-		}
-		this.mode = true;
-		return this.routeD(new ArrayList<Integer>(), start, target, rand,
-				graph.getNodes(), this.idSpaceD.getMaxDistance());
 	}
 
 	private Route routeD(ArrayList<Integer> route, int current,
 			DIdentifier target, Random rand, Node[] nodes, double minDist) {
 		route.add(current);
-		if (this.idSpaceD.getPartitions()[current].contains(target)) {
-			return new RouteImpl(route, true);
-		}
-		if (this.dsl != null
-				&& this.dsl.getStorageForNode(current).containsId(target)) {
-			return new RouteImpl(route, true);
+		if (this.isEndPoint(current, target)) {
+			return new Route(route, true);
 		}
 		if (route.size() > this.ttl) {
-			return new RouteImpl(route, false);
+			return new Route(route, false);
 		}
 		double[] next = this.getNextD(current, target, rand, nodes, minDist);
 		int minNode = (int) next[0];
 		// double dist = next[1];
 		if (minNode == -1) {
-			return new RouteImpl(route, false);
+			return new Route(route, false);
 		}
 		return this.routeD(route, minNode, target, rand, nodes, minDist);
 	}
@@ -157,6 +113,8 @@ public class GravityPressureRouting extends RoutingAlgorithm {
 
 	@Override
 	public void preprocess(Graph graph) {
+		super.preprocess(graph);
+
 		GraphProperty p = graph.getProperty("ID_SPACE_0");
 		if (p instanceof DIdentifierSpace) {
 			this.idSpaceD = (DIdentifierSpace) p;
@@ -173,9 +131,6 @@ public class GravityPressureRouting extends RoutingAlgorithm {
 			this.pD = null;
 			this.idSpaceBI = null;
 			this.pBI = null;
-		}
-		if (graph.hasProperty("DATA_STORAGE_0")) {
-			this.dsl = (DataStorageList) graph.getProperty("DATA_STORAGE_0");
 		}
 	}
 

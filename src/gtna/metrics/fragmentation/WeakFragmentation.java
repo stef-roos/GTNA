@@ -48,8 +48,13 @@ import gtna.transformation.partition.WeakConnectivityPartition;
 public class WeakFragmentation extends Fragmentation {
 
 	public WeakFragmentation(NodeSorter sorter,
+			Resolution resolution, boolean bidirectional) {
+		super(Fragmentation.Type.WEAK, sorter, resolution, bidirectional);
+	}
+	
+	public WeakFragmentation(NodeSorter sorter,
 			Resolution resolution) {
-		super(Fragmentation.Type.WEAK, sorter, resolution);
+		super(Fragmentation.Type.WEAK, sorter, resolution, false);
 	}
 
 	@Override

@@ -35,7 +35,9 @@
  */
 package computations.resilience;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 
@@ -51,9 +53,11 @@ public class DegreeRemoval {
 			BufferedWriter bw = new BufferedWriter(new FileWriter(file));
 			String line;
 			for (int i = 1; i < dist.length; i++){
+				if (dist[i] != 0){
 				double d = Math.log(dist[i]);
 				bw.write(i + " " +d);
 				bw.newLine();
+				}
 			}
 			bw.flush();
 			bw.close();
@@ -91,5 +95,29 @@ public class DegreeRemoval {
 		}
 		return distN;
 	}
+	
+	public static double[] getDegreeFile(String file, int max){
+		double[] dist = new double[max+1];
+		try{
+		BufferedReader br = new  BufferedReader(new FileReader(file));
+		String line;
+		while ((line =br.readLine()) != null){
+			String[] parts = line.split(" ");
+			if (parts.length == 2){
+				dist[Integer.parseInt(parts[0])] = Double.parseDouble(parts[1]);
+			}
+		}
+		} catch(IOException e){
+			
+		}
+		return dist;
+	}
 
+	public static double[] expand(double[] array, int size) {
+	    double[] temp = new double[size];
+	    System.arraycopy(array, 0, temp, 0, array.length);
+	    for(int j = array.length; j < size; j++)
+	        temp[j] = 0;
+	    return temp;
+	}
 }
